@@ -1,0 +1,53 @@
+
+An Erlang network protocol library.
+
+Originally part of epcap: http://github.com/msantos/epcap
+
+
+EXPORTS
+
+pkt:decapsulate(Data) -> Packet
+
+    Types   Data = binary()
+            Packet = [ Headers, Payload ]
+            Headers = Header
+            Header = {ether, binary()} | {arp, binary()} | {ipv4, binary()} |
+                {ipv6, binary()} | {tcp, binary()} | {udp, binary()} |
+                {sctp, binary()} | {icmp, binary()} | {unsupported, binary()}
+            Payload = binary()
+
+    Attempts to decapsulate the packet into a list of tuples.
+
+
+The following functions create the protocol headers, converting between
+records and binaries. See include/pkt.hrl for definition of the record
+types.
+
+ether(Packet) -> {#ether{}, Payload} | binary()
+arp(Packet) -> {#arp{}, Payload} | binary()
+ipv4(Packet) -> {#ipv4{}, Payload} | binary()
+ipv6(Packet) -> {#ipv6{}, Payload} | binary()
+tcp(Packet) -> {#tcp{}, Payload} | binary()
+sctp(Packet) -> {#sctp{}, Payload} | binary()
+udp(Packet) -> {#udp{}, Payload} | binary()
+icmp(Packet) -> {#icmp{}, Payload} | binary()
+
+makesum(Packet) -> integer()
+
+    Types   Packet = IPv4_header | [IPv4_header, Header, Payload]
+            IPv4_header = #ipv4{}
+            Header = #tcp{} | #udp{}
+            Payload = binary()
+
+    Calculate the checksum of the packet. 
+
+
+TODO
+
+
+CONTRIBUTORS
+
+Olivier Girondel: IPv6 support
+Harald Welte: support reading packets from pcap file; SCTP support
+Gregory Haskins: fix application file
+
