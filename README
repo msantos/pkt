@@ -32,6 +32,10 @@ sctp(Packet) -> {#sctp{}, Payload} | binary()
 udp(Packet) -> {#udp{}, Payload} | binary()
 icmp(Packet) -> {#icmp{}, Payload} | binary()
 
+    Types   Packet = Header | binary()
+            Header = #ether{} | #arp{} | #ipv4{} | #ipv6{} |
+                #tcp{} | #sctp{} | #upd{} | #icmp{}
+
 makesum(Packet) -> integer()
 
     Types   Packet = IPv4_header | [IPv4_header, Header, Payload]
