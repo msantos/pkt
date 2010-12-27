@@ -45,20 +45,15 @@
         makesum/1,
         valid/1,
         ether/1,
-        ether_addr/1,
         ether_type/1,
         arp/1,
         icmp/1,
         ipv4/1,
         ipv6/1,
-        payload/1,
         proto/1,
         tcp/1,
-        tcp_flags/1,
         udp/1
 ]).
-
--define(is_print(C), C >= $ , C =< $~).
 
 
 decapsulate(Data) ->
@@ -414,9 +409,6 @@ icmp(#icmp{type = Type, code = Code, checksum = Checksum, un = Un}) ->
 %%
 %% Utility functions
 %%
-payload(Payload) ->
-    [ to_ascii(C) || <<C:8>> <= Payload ].
-
 
 % TCP pseudoheader checksum
 checksum([#ipv4{
@@ -484,18 +476,4 @@ compl(N,S) -> compl(N+S).
 
 valid(16#FFFF) -> true;
 valid(_) -> false.
-
-to_ascii(C) when ?is_print(C) -> C;
-to_ascii(_) -> $..
-
-ether_addr(B) when is_binary(B) ->
-    ether_addr(binary_to_list(B));
-ether_addr(L) when is_list(L) ->
-    [ hd(io_lib:format("~.16B", [N])) || N <- L ].
-
-tcp_flags(#tcp{cwr = CWR, ece = ECE, urg = URG, ack = ACK,
-        psh = PSH, rst = RST, syn = SYN, fin = FIN}) ->
-    [ atom_to_list(F) || {F,V} <-
-            [{cwr,CWR}, {ece,ECE}, {urg,URG}, {ack,ACK}, {psh,PSH}, {rst,RST}, {syn,SYN}, {fin,FIN}], V =:= 1 ].
-
 
