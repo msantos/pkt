@@ -168,7 +168,7 @@ ipv4(
     SA1:8, SA2:8, SA3:8, SA4:8,
     DA1:8, DA2:8, DA3:8, DA4:8,
     Rest/binary>>
-) ->
+) when HL >= 5 ->
     {Opt, Payload} = options(HL, Rest),
     {#ipv4{
         hl = HL, tos = ToS, len = Len,
@@ -229,7 +229,7 @@ tcp(
           PSH:1, RST:1, SYN:1, FIN:1, Win:16,
       Sum:16, Urp:16,
       Rest/binary>>
-) ->
+) when Off >= 5 ->
     {Opt, Payload} = options(Off, Rest),
     {#tcp{
         sport = SPort, dport = DPort,
@@ -255,12 +255,10 @@ tcp(#tcp{
           PSH:1, RST:1, SYN:1, FIN:1, Win:16,
       Sum:16, Urp:16>>.
 
-options(Offset, Payload) when Offset > 5 ->
+options(Offset, Payload) ->
     N = (Offset-5)*4,
     <<Opt:N/binary, Payload1/binary>> = Payload,
-    {Opt, Payload1};
-options(_, Payload) ->
-    {<<>>, Payload}.
+    {Opt, Payload1}.
 
 %%
 %% SCTP
