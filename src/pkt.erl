@@ -58,16 +58,26 @@
 ]).
 
 
-decapsulate(Data) ->
-    decapsulate({ether, Data}, []).
-
 decapsulate_dlt(Dlt, Data) ->
     decapsulate({link_type(Dlt), Data}, []).
 
+
+decapsulate({DLT, Data}) when is_integer(DLT) ->
+    decapsulate({link_type(DLT), Data}, []);
+decapsulate({DLT, Data}) when is_atom(DLT) ->
+    decapsulate({DLT, Data}, []);
+decapsulate(Data) when is_binary(Data) ->
+    decapsulate({ether, Data}, []).
+
 decapsulate(stop, Packet) ->
     lists:reverse(Packet);
+
 decapsulate({unsupported, Data}, Packet) ->
     decapsulate(stop, [{unsupported, Data}|Packet]);
+
+decapsulate({null, Data}, Packet) when byte_size(Data) >= 16 ->
+    {Hdr, Payload} = null(Data),
+    decapsulate({family(Hdr#null.family), Payload}, [Hdr|Packet]);
 decapsulate({linux_cooked, Data}, Packet) when byte_size(Data) >= 16 ->
     {Hdr, Payload} = linux_cooked(Data),
     decapsulate({ether_type(Hdr#linux_cooked.pro), Payload}, [Hdr|Packet]);
@@ -77,12 +87,14 @@ decapsulate({ether, Data}, Packet) when byte_size(Data) >= ?ETHERHDRLEN ->
 decapsulate({arp, Data}, Packet) when byte_size(Data) >= 28 -> % IPv4 ARP
     {Hdr, Payload} = arp(Data),
     decapsulate(stop, [Payload, Hdr|Packet]);
+
 decapsulate({ipv4, Data}, Packet) when byte_size(Data) >= ?IPV4HDRLEN ->
     {Hdr, Payload} = ipv4(Data),
     decapsulate({proto(Hdr#ipv4.p), Payload}, [Hdr|Packet]);
 decapsulate({ipv6, Data}, Packet) when byte_size(Data) >= ?IPV6HDRLEN ->
     {Hdr, Payload} = ipv6(Data),
     decapsulate({proto(Hdr#ipv6.next), Payload}, [Hdr|Packet]);
+
 decapsulate({tcp, Data}, Packet) when byte_size(Data) >= ?TCPHDRLEN ->
     {Hdr, Payload} = tcp(Data),
     decapsulate(stop, [Payload, Hdr|Packet]);
@@ -98,20 +110,37 @@ decapsulate({icmp, Data}, Packet) when byte_size(Data) >= ?ICMPHDRLEN ->
 decapsulate({_, Data}, Packet) ->
     decapsulate(stop, [{truncated, Data}|Packet]).
 
+
 ether_type(?ETH_P_IP) -> ipv4;
 ether_type(?ETH_P_IPV6) -> ipv6;
 ether_type(?ETH_P_ARP) -> arp;
 ether_type(_) -> unsupported.
 
+link_type(?DLT_NULL) -> null;
 link_type(?DLT_EN10MB) -> ether;
-link_type(?DLT_LINUX_SLL) -> linux_cooked.
+link_type(?DLT_LINUX_SLL) -> linux_cooked;
+link_type(_) -> unsupported.
 
+family(?PF_INET) -> ipv4;
+family(?PF_INET6) -> ipv6;
+family(_) -> unsupported.
 
 proto(?IPPROTO_ICMP) -> icmp;
 proto(?IPPROTO_TCP) -> tcp;
 proto(?IPPROTO_UDP) -> udp;
 proto(?IPPROTO_SCTP) -> sctp;
 proto(_) -> unsupported.
+
+
+%%
+%% BSD loopback
+%%
+null(<<Family:4/native-unsigned-integer-unit:8, Payload/binary>>) ->
+    {#null{
+            family = Family
+        }, Payload};
+null(#null{family = Family}) ->
+    <<Family:4/native-unsigned-integer-unit:8>>.
 
 %%
 %% Linux cooked capture ("-i any") - DLT_LINUX_SLL
