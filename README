@@ -11,7 +11,8 @@ pkt:decapsulate(Data) -> Packet
     Types   Data = binary()
             Packet = [ Headers, Payload ]
             Headers = Header
-            Header = {ether, binary()} | {arp, binary()} | {ipv4, binary()} |
+            Header = {ether, binary()} | {arp, binary()} | {null, binary()} |
+                {linux_cooked, binary()} | {ipv4, binary()} |
                 {ipv6, binary()} | {tcp, binary()} | {udp, binary()} |
                 {sctp, binary()} | {icmp, binary()} | {unsupported, binary()}
             Payload = binary()
@@ -24,6 +25,8 @@ records and binaries. See include/pkt.hrl for definition of the record
 types.
 
 ether(Packet) -> {#ether{}, Payload} | binary()
+null(Packet) -> {#null{}, Payload} | binary()
+linux_cooked(Packet) -> {#linux_cooked{}, Payload} | binary()
 arp(Packet) -> {#arp{}, Payload} | binary()
 ipv4(Packet) -> {#ipv4{}, Payload} | binary()
 ipv6(Packet) -> {#ipv6{}, Payload} | binary()
@@ -33,8 +36,8 @@ udp(Packet) -> {#udp{}, Payload} | binary()
 icmp(Packet) -> {#icmp{}, Payload} | binary()
 
     Types   Packet = Header | binary()
-            Header = #ether{} | #arp{} | #ipv4{} | #ipv6{} |
-                #tcp{} | #sctp{} | #upd{} | #icmp{}
+            Header = #ether{} | #null{} | #linux_cooked{} | #arp{} |
+                #ipv4{} | #ipv6{} | #tcp{} | #sctp{} | #upd{} | #icmp{}
 
 makesum(Packet) -> integer()
 
@@ -48,10 +51,25 @@ makesum(Packet) -> integer()
 
 TODO
 
+* DLTs
+    * DLT_SLIP
+    * DLT_PPP
+    * DLT_RAW
+    * DLT\_PPP\_SERIAL
+    * DLT\_PPP\_ETHER
+    * DLT\_IEEE802\_11
+    * DLT_LOOP
+
 
 CONTRIBUTORS
 
-Olivier Girondel: IPv6 support
-Harald Welte: support reading packets from pcap file; SCTP support
-Gregory Haskins: fix application file
+* Olivier Girondel:
+    * preliminary IPv6 support
 
+* Harald Welte:
+    * support reading packets from pcap file
+    * SCTP support
+    * datalink types
+
+* Gregory Haskins:
+    * application file fix

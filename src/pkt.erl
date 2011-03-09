@@ -49,6 +49,8 @@
         ether_type/1,
         link_type/1,
         arp/1,
+        null/1,
+        linux_cooked/1,
         icmp/1,
         ipv4/1,
         ipv6/1,
