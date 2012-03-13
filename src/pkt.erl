@@ -132,6 +132,7 @@ proto(?IPPROTO_ICMP) -> icmp;
 proto(?IPPROTO_TCP) -> tcp;
 proto(?IPPROTO_UDP) -> udp;
 proto(?IPPROTO_SCTP) -> sctp;
+proto(?IPPROTO_RAW) -> raw;
 proto(_) -> unsupported.
 
 
@@ -254,24 +255,26 @@ ipv4(#ipv4{
 ipv6(
     <<6:4, Class:8, Flow:20,
     Len:16, Next:8, Hop:8,
-    Src:128,
-    Dst:128,
+    SA1:16, SA2:16, SA3:16, SA4:16, SA5:16, SA6:16, SA7:16, SA8:16,
+    DA1:16, DA2:16, DA3:16, DA4:16, DA5:16, DA6:16, DA7:16, DA8:16,
     Payload/binary>>
 ) ->
     {#ipv6{
         class = Class, flow = Flow,
         len = Len, next = Next, hop = Hop,
-        saddr = Src, daddr = Dst
+        saddr = {SA1, SA2, SA3, SA4, SA5, SA6, SA7, SA8},
+        daddr = {DA1, DA2, DA3, DA4, DA5, DA6, DA7, DA8}
     }, Payload};
 ipv6(#ipv6{
         class = Class, flow = Flow,
         len = Len, next = Next, hop = Hop,
-        saddr = Src, daddr = Dst
+        saddr = {SA1, SA2, SA3, SA4, SA5, SA6, SA7, SA8},
+        daddr = {DA1, DA2, DA3, DA4, DA5, DA6, DA7, DA8}
     }) ->
     <<6:4, Class:8, Flow:20,
     Len:16, Next:8, Hop:8,
-    Src:128,
-    Dst:128>>.
+    SA1:16, SA2:16, SA3:16, SA4:16, SA5:16, SA6:16, SA7:16, SA8:16,
+    DA1:16, DA2:16, DA3:16, DA4:16, DA5:16, DA6:16, DA7:16, DA8:16>>.
 
 
 %%
