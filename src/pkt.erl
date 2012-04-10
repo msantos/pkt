@@ -38,6 +38,7 @@
 -define(TCPHDRLEN, 20).
 -define(UDPHDRLEN, 8).
 -define(ICMPHDRLEN, 8).
+-define(GREHDRLEN, 4).
 
 -export([
         checksum/1,
@@ -97,6 +98,10 @@ decapsulate({ipv4, Data}, Packet) when byte_size(Data) >= ?IPV4HDRLEN ->
 decapsulate({ipv6, Data}, Packet) when byte_size(Data) >= ?IPV6HDRLEN ->
     {Hdr, Payload} = ipv6(Data),
     decapsulate({proto(Hdr#ipv6.next), Payload}, [Hdr|Packet]);
+%% GRE
+decapsulate({gre, Data}, Packet) when byte_size(Data) >= ?GREHDRLEN ->
+    {Hdr, Payload} = gre(Data),
+    decapsulate({ether_type(Hdr#gre.type), Payload}, [Hdr|Packet]);
 
 decapsulate({tcp, Data}, Packet) when byte_size(Data) >= ?TCPHDRLEN ->
     {Hdr, Payload} = tcp(Data),
@@ -132,6 +137,7 @@ proto(?IPPROTO_ICMP) -> icmp;
 proto(?IPPROTO_TCP) -> tcp;
 proto(?IPPROTO_UDP) -> udp;
 proto(?IPPROTO_SCTP) -> sctp;
+proto(?IPPROTO_GRE) -> gre;
 proto(?IPPROTO_RAW) -> raw;
 proto(_) -> unsupported.
 
@@ -276,6 +282,23 @@ ipv6(#ipv6{
     SA1:16, SA2:16, SA3:16, SA4:16, SA5:16, SA6:16, SA7:16, SA8:16,
     DA1:16, DA2:16, DA3:16, DA4:16, DA5:16, DA6:16, DA7:16, DA8:16>>.
 
+%%
+%% GRE
+%%
+gre(<<0:1,Res0:12,Ver:3,Type:16,Rest/binary>>) ->
+    {#gre{c = 0, res0 = Res0, ver = Ver, type = Type
+       },Rest
+    };
+gre(<<1:1,Res0:12,Ver:3,Type:16,Chksum:16,Res1:16,Rest/binary>>) ->
+    {#gre{c = 1, res0 = Res0, ver = Ver, type = Type,
+	chksum = Chksum, res1 = Res1
+       },Rest
+    };
+gre(#gre{c = 0, res0 = Res0, ver = Ver, type = Type}) ->
+    <<0:1,Res0:12,Ver:3,Type:16>>;
+gre(#gre{c = 1, res0 = Res0, ver = Ver, type = Type,
+	chksum = Chksum, res1 = Res1}) ->
+    <<1:1,Res0:12,Ver:3,Type:16,Chksum:16,Res1:16>>.
 
 %%
 %% TCP

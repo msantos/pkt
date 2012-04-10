@@ -67,6 +67,7 @@
 -define(IPPROTO_ICMP, 1).
 -define(IPPROTO_TCP, 6).
 -define(IPPROTO_UDP, 17).
+-define(IPPROTO_GRE, 47).
 -define(IPPROTO_ICMPV6, 58).
 -define(IPPROTO_SCTP, 132).
 -define(IPPROTO_RAW, 255).
@@ -178,3 +179,11 @@
 -record(sctp_chunk_data, {
 	tsn = 0, sid = 0, ssn = 0, ppi = 0, data
 	}).
+
+
+%% RFC 2784 - Generic Routing Encapsulation (GRE)
+-record(gre, {
+        c = 0, res0 = 0, ver = 0,
+        type = ?ETH_P_IP,
+        chksum = <<>>, res1 = <<>>
+    }).
