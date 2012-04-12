@@ -74,3 +74,6 @@ types.
 
 * Gregory Haskins:
     * application file fix
+
+* Alexey Larin
+    * GRE support
