@@ -133,9 +133,11 @@ family(?PF_INET) -> ipv4;
 family(?PF_INET6) -> ipv6;
 family(_) -> unsupported.
 
+proto(?IPPROTO_IP) -> ip;
 proto(?IPPROTO_ICMP) -> icmp;
 proto(?IPPROTO_TCP) -> tcp;
 proto(?IPPROTO_UDP) -> udp;
+proto(?IPPROTO_IPV6) -> ipv6;
 proto(?IPPROTO_SCTP) -> sctp;
 proto(?IPPROTO_GRE) -> gre;
 proto(?IPPROTO_RAW) -> raw;
