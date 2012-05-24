@@ -1,4 +1,4 @@
-%% Copyright (c) 2009-2010, Michael Santos <michael.santos@gmail.com>
+%% Copyright (c) 2009-2012, Michael Santos <michael.santos@gmail.com>
 %% All rights reserved.
 %%
 %% Redistribution and use in source and binary forms, with or without
@@ -38,6 +38,7 @@
 -define(TCPHDRLEN, 20).
 -define(UDPHDRLEN, 8).
 -define(ICMPHDRLEN, 8).
+-define(ICMP6HDRLEN, 8).
 -define(GREHDRLEN, 4).
 
 -export([
@@ -53,6 +54,7 @@
         null/1,
         linux_cooked/1,
         icmp/1,
+        icmp6/1,
         ipv4/1,
         ipv6/1,
         proto/1,
@@ -115,6 +117,9 @@ decapsulate({sctp, Data}, Packet) when byte_size(Data) >= 12 ->
 decapsulate({icmp, Data}, Packet) when byte_size(Data) >= ?ICMPHDRLEN ->
     {Hdr, Payload} = icmp(Data),
     decapsulate(stop, [Payload, Hdr|Packet]);
+decapsulate({icmp6, Data}, Packet) when byte_size(Data) >= ?ICMP6HDRLEN ->
+    {Hdr, Payload} = icmp6(Data),
+    decapsulate(stop, [Payload, Hdr|Packet]);
 decapsulate({_, Data}, Packet) ->
     decapsulate(stop, [{truncated, Data}|Packet]).
 
@@ -135,6 +140,7 @@ family(_) -> unsupported.
 
 proto(?IPPROTO_IP) -> ip;
 proto(?IPPROTO_ICMP) -> icmp;
+proto(?IPPROTO_ICMPV6) -> icmp6;
 proto(?IPPROTO_TCP) -> tcp;
 proto(?IPPROTO_UDP) -> udp;
 proto(?IPPROTO_IPV6) -> ipv6;
@@ -493,6 +499,68 @@ icmp(<<Type:8, Code:8, Checksum:16, Un:32, Payload/binary>>) ->
     }, Payload};
 icmp(#icmp{type = Type, code = Code, checksum = Checksum, un = Un}) ->
     <<Type:8, Code:8, Checksum:16, Un:32>>.
+
+
+%%
+%% ICMPv6
+%%
+
+% ICMPv6 Error Messages
+
+% Destination Unreachable Message
+icmp6(<<?ICMP6_DST_UNREACH:8, Code:8, Checksum:16, Unused:32/bits, Payload/binary>>) ->
+    {#icmp6{
+        type = ?ICMP6_DST_UNREACH, code = Code, checksum = Checksum, un = Unused
+    }, Payload};
+icmp6(#icmp6{
+        type = ?ICMP6_DST_UNREACH, code = Code, checksum = Checksum, un = Unused
+    }) ->
+    <<?ICMP6_DST_UNREACH:8, Code:8, Checksum:16, Unused:32/bits>>;
+
+% Packet too big
+icmp6(<<?ICMP6_PACKET_TOO_BIG:8, Code:8, Checksum:16, MTU:32, Payload/binary>>) ->
+    {#icmp6{
+        type = ?ICMP6_PACKET_TOO_BIG, code = Code, checksum = Checksum, mtu = MTU
+    }, Payload};
+icmp6(#icmp6{
+        type = ?ICMP6_PACKET_TOO_BIG, code = Code, checksum = Checksum, mtu = MTU
+    }) ->
+    <<?ICMP6_PACKET_TOO_BIG:8, Code:8, Checksum:16, MTU:32>>;
+
+% Time Exceeded Message
+icmp6(<<?ICMP6_TIME_EXCEEDED:8, Code:8, Checksum:16, Unused:32/bits, Payload/binary>>) ->
+    {#icmp6{
+        type = ?ICMP6_TIME_EXCEEDED, code = Code, checksum = Checksum, un = Unused
+    }, Payload};
+icmp6(#icmp6{
+        type = ?ICMP6_TIME_EXCEEDED, code = Code, checksum = Checksum, un = Unused
+    }) ->
+    <<?ICMP6_TIME_EXCEEDED:8, Code:8, Checksum:16, Unused:32/bits>>;
+
+% Parameter Problem Message
+icmp6(<<?ICMP6_PARAM_PROB:8, Code:8, Checksum:16, Ptr:32, Payload/binary>>) ->
+    {#icmp6{
+        type = ?ICMP6_PARAM_PROB, code = Code, checksum = Checksum, pptr = Ptr
+    }, Payload};
+icmp6(#icmp6{
+        type = ?ICMP6_PARAM_PROB, code = Code, checksum = Checksum, pptr = Ptr
+    }) ->
+    <<?ICMP6_PARAM_PROB:8, Code:8, Checksum:16, Ptr:32>>;
+
+% ICMPv6 Informational Messages
+
+% Echo Request Message/Echo Reply Message
+icmp6(<<Type:8, Code:8, Checksum:16, Id:16, Seq:16, Payload/binary>>)
+        when Type =:= ?ICMP6_ECHO_REQUEST; Type =:= ?ICMP6_ECHO_REPLY ->
+    {#icmp6{
+        type = Type, code = Code, checksum = Checksum,
+        id = Id, seq = Seq
+    }, Payload};
+icmp6(#icmp6{
+        type = Type, code = Code, checksum = Checksum,
+        id = Id, seq = Seq
+    }) when Type =:= ?ICMP6_ECHO_REQUEST; Type =:= ?ICMP6_ECHO_REPLY ->
+    <<Type:8, Code:8, Checksum:16, Id:16, Seq:16>>.
 
 
 %%

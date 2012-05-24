@@ -35,10 +35,13 @@ types.
     sctp(Packet) -> {#sctp{}, Payload} | binary()
     udp(Packet) -> {#udp{}, Payload} | binary()
     icmp(Packet) -> {#icmp{}, Payload} | binary()
+    icmp6(Packet) -> {#icmp6{}, Payload} | binary()
     
         Types   Packet = Header | binary()
                 Header = #ether{} | #null{} | #linux_cooked{} | #arp{} |
-                    #ipv4{} | #ipv6{} | #tcp{} | #sctp{} | #upd{} | #icmp{}
+                    #ipv4{} | #ipv6{} | #tcp{} | #sctp{} | #udp{} |
+                    #icmp{} | #icmp6{}
+
     
     makesum(Packet) -> integer()
     
