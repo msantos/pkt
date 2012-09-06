@@ -355,27 +355,20 @@ options(Offset, Payload) ->
 %%
 sctp(<<SPort:16, DPort:16, VTag:32, Sum:32, Payload/binary>>) ->
 	{#sctp{sport = SPort, dport = DPort, vtag = VTag, sum = Sum,
-	 chunks=sctp_chunk_list_gen(Payload)}, []}.
+	 chunks = sctp_decode_chunks(Payload)}, []}.
 
-sctp_chunk_list_gen(Payload) ->
-	sctp_chunk_list_gen(Payload, []).
+sctp_decode_chunks(Chunks) ->
+    sctp_decode_chunks(Chunks, []).
 
-sctp_chunk_list_gen(Payload, List) ->
-	% chop the first chunk off the payload
-	case sctp_chunk_chop(Payload) of
-		{Chunk, Remainder} ->
-			% loop
-			sctp_chunk_list_gen(Remainder, [Chunk|List]);
-		[] ->
-			List
-	end.
-
-sctp_chunk_chop(<<>>) ->
-	[];
-sctp_chunk_chop(<<Ctype:8, Cflags:8, Clen:16, Remainder/binary>>) ->
-	Payload = binary:part(Remainder, 0, Clen-4),
-	Tail = binary:part(Remainder, Clen-4, byte_size(Remainder)-(Clen-4)),
-	{sctp_chunk(Ctype, Cflags, Clen, Payload), Tail}.
+sctp_decode_chunks(<<>>, Acc) ->
+    lists:reverse(Acc);
+sctp_decode_chunks(<<Type:8, Flags:8, Length:16, Rest/binary>>, Acc) ->
+    L = case Length rem 4 of
+        0 -> Length - 4;
+        Pad -> Length + Pad - 4
+    end,
+    <<Payload:L/binary-unit:8, Tail/binary>> = Rest,
+    sctp_decode_chunks(Tail, [sctp_chunk(Type, Flags, Length, Payload) | Acc]).
 
 sctp_chunk(Ctype, Cflags, Clen, Payload) ->
 	#sctp_chunk{type=Ctype, flags=Cflags, len = Clen-4,
@@ -385,7 +378,6 @@ sctp_chunk_payload(0, <<Tsn:32, Sid:16, Ssn:16, Ppi:32, Data/binary>>) ->
 	#sctp_chunk_data{tsn=Tsn, sid=Sid, ssn=Ssn, ppi=Ppi, data=Data};
 sctp_chunk_payload(_, Data) ->
 	Data.
-
 
 %%
 %% UDP
