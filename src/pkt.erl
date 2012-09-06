@@ -360,8 +360,7 @@ sctp(<<SPort:16, DPort:16, VTag:32, Sum:32, Payload/binary>>) ->
 sctp_decode_chunks(Chunks) ->
     sctp_decode_chunks(Chunks, []).
 
-sctp_decode_chunks(<<>>, Acc) ->
-    lists:reverse(Acc);
+sctp_decode_chunks(<<>>, Acc) -> Acc;
 sctp_decode_chunks(<<Type:8, Flags:8, Length:16, Rest/binary>>, Acc) ->
     L = case Length rem 4 of
         0 -> Length - 4;
