@@ -1,2 +1,3 @@
-*.[oa]
-*.beam
+ebin
+.test
+*.swp
