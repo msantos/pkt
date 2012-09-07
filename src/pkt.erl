@@ -60,13 +60,12 @@
         proto/1,
         tcp/1,
         udp/1,
+        sctp/1,
         dlt/1
 ]).
 
-
 decapsulate_dlt(Dlt, Data) ->
     decapsulate({link_type(Dlt), Data}, []).
-
 
 decapsulate({DLT, Data}) when is_integer(DLT) ->
     decapsulate({link_type(DLT), Data}, []);
