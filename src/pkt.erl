@@ -365,8 +365,13 @@ sctp_decode_chunks(<<Type:8, Flags:8, Length:16, Rest/binary>>, Acc) ->
         0 -> Length - 4;
         Pad -> Length + (4 - Pad) - 4
     end,
-    <<Payload:L/binary-unit:8, Tail/binary>> = Rest,
-    sctp_decode_chunks(Tail, [sctp_chunk(Type, Flags, L, Payload) | Acc]).
+    case Rest of
+        <<>> ->
+            Acc;
+        _ ->
+            <<Payload:L/binary-unit:8, Tail/binary>> = Rest,
+            sctp_decode_chunks(Tail, [sctp_chunk(Type, Flags, L, Payload) | Acc])
+    end.
 
 sctp_chunk(Ctype, Cflags, Clen, Payload) ->
 	#sctp_chunk{type=Ctype, flags=Cflags, len = Clen-4,
