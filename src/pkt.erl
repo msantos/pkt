@@ -352,33 +352,44 @@ options(Offset, Payload) ->
 %%
 %% SCTP
 %%
+-spec sctp(binary()) -> {#sctp{}, []}.
 sctp(<<SPort:16, DPort:16, VTag:32, Sum:32, Payload/binary>>) ->
-	{#sctp{sport = SPort, dport = DPort, vtag = VTag, sum = Sum,
-	 chunks = sctp_decode_chunks(Payload)}, []}.
+    SCTP = #sctp{
+        sport = SPort, dport = DPort, vtag = VTag,
+        sum = Sum, chunks = sctp_decode_chunks(Payload)
+    },
+    {SCTP, []}.
 
+-spec sctp_decode_chunks(binary()) -> [#sctp_chunk{}].
 sctp_decode_chunks(Chunks) ->
     sctp_decode_chunks(Chunks, []).
 
-sctp_decode_chunks(<<>>, Acc) -> Acc;
+-spec sctp_decode_chunks(binary(), list()) -> [#sctp_chunk{}].
+sctp_decode_chunks(<<_Type:8, _Flags:8, Length:16, Rest/binary>>, Acc)
+        when Length =< 4 ->
+    sctp_decode_chunks(Rest, Acc);
+
 sctp_decode_chunks(<<Type:8, Flags:8, Length:16, Rest/binary>>, Acc) ->
     L = case Length rem 4 of
-        0 -> Length - 4;
-        Pad -> Length + (4 - Pad) - 4
+        0 -> % No padding bytes
+            Length - 4;
+        Pad ->
+            Length + (4 - Pad) - 4
     end,
-    case Rest of
-        <<>> ->
-            Acc;
-        _ ->
-            <<Payload:L/binary-unit:8, Tail/binary>> = Rest,
-            sctp_decode_chunks(Tail, [sctp_chunk(Type, Flags, L, Payload) | Acc])
-    end.
+    <<Payload:L/binary-unit:8, Tail/binary>> = Rest,
+    sctp_decode_chunks(Tail, [sctp_chunk(Type, Flags, Length, Payload) | Acc]);
+sctp_decode_chunks(_, Acc) -> Acc.
 
+-spec sctp_chunk(byte(), byte(), non_neg_integer(), binary()) -> #sctp_chunk{}.
 sctp_chunk(Ctype, Cflags, Clen, Payload) ->
-	#sctp_chunk{type=Ctype, flags=Cflags, len = Clen-4,
-		    payload=sctp_chunk_payload(Ctype, Payload)}.
+	#sctp_chunk{
+        type = Ctype, flags = Cflags, len = Clen - 4,
+        payload = sctp_chunk_payload(Ctype, Payload)
+    }.
 
+-spec sctp_chunk_payload(non_neg_integer(), binary()) -> #sctp_chunk_data{} | binary().
 sctp_chunk_payload(0, <<Tsn:32, Sid:16, Ssn:16, Ppi:32, Data/binary>>) ->
-	#sctp_chunk_data{tsn=Tsn, sid=Sid, ssn=Ssn, ppi=Ppi, data=Data};
+	#sctp_chunk_data{tsn = Tsn, sid = Sid, ssn = Ssn, ppi = Ppi, data = Data};
 sctp_chunk_payload(_, Data) ->
 	Data.
 

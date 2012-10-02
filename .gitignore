@@ -1,3 +1,4 @@
 ebin
 .test
+.eunit
 *.swp
