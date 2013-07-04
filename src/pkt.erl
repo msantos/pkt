@@ -335,14 +335,17 @@ tcp(#tcp{
         ackno = AckNo,
         off = Off, cwr = CWR, ece = ECE, urg = URG, ack = ACK,
             psh = PSH, rst = RST, syn = SYN, fin = FIN, win = Win,
-        sum = Sum, urp = Urp
+        sum = Sum, urp = Urp,
+        opt = Opt
     }) ->
+    Pad = ((Off - 5) * 4 - byte_size(Opt)) * 8,
     <<SPort:16, DPort:16,
       SeqNo:32,
       AckNo:32,
       Off:4, 0:4, CWR:1, ECE:1, URG:1, ACK:1,
           PSH:1, RST:1, SYN:1, FIN:1, Win:16,
-      Sum:16, Urp:16>>.
+      Sum:16, Urp:16,
+      Opt/binary, 0:Pad>>.
 
 options(Offset, Payload) ->
     N = (Offset-5)*4,
@@ -583,12 +586,12 @@ checksum([#ipv4{
     } = TCPhdr,
     Payload
 ]) ->
-    Len = Off * 4,
-    TCP = tcp(TCPhdr#tcp{sum = 0}),
+    Len = Off * 4 + byte_size(Payload),
     Pad = case Len rem 2 of
         0 -> 0;
         1 -> 8
     end,
+    TCP = tcp(TCPhdr#tcp{sum = 0}),
     checksum(
         <<SA1,SA2,SA3,SA4,
           DA1,DA2,DA3,DA4,
