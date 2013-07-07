@@ -253,13 +253,16 @@ ipv4(#ipv4{
         id = Id, df = DF, mf = MF,
         off = Off, ttl = TTL, p = P, sum = Sum,
         saddr = {SA1,SA2,SA3,SA4},
-        daddr = {DA1,DA2,DA3,DA4}
+        daddr = {DA1,DA2,DA3,DA4},
+        opt = Opt
     }) ->
+    Pad = ((HL - 5) * 4 - byte_size(Opt)) * 8,
     <<4:4, HL:4, ToS:8, Len:16,
     Id:16, 0:1, DF:1, MF:1, %% RFC791 states it's a MUST
     Off:13, TTL:8, P:8, Sum:16,
     SA1:8, SA2:8, SA3:8, SA4:8,
-    DA1:8, DA2:8, DA3:8, DA4:8>>.
+    DA1:8, DA2:8, DA3:8, DA4:8,
+    Opt/binary, 0:Pad>>.
 
 
 %%
