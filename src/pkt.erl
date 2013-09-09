@@ -371,6 +371,7 @@ sctp_decode_chunks(Chunks) ->
     sctp_decode_chunks(Chunks, []).
 
 -spec sctp_decode_chunks(binary(), list()) -> [#sctp_chunk{}].
+%sctp_decode_chunks(<<>>, Acc) -> Acc;
 sctp_decode_chunks(<<_Type:8, _Flags:8, Length:16, Rest/binary>>, Acc)
         when Length =< 4 ->
     sctp_decode_chunks(Rest, Acc);
@@ -379,12 +380,16 @@ sctp_decode_chunks(<<Type:8, Flags:8, Length:16, Rest/binary>>, Acc) ->
     L = case Length rem 4 of
         0 -> % No padding bytes
             Length - 4;
-        Pad ->
-            Length + (4 - Pad) - 4
+        N when N =< 3 -> % pad should be no more than 3 bytes
+            Length + (4 - N) - 4
     end,
-    <<Payload:L/binary-unit:8, Tail/binary>> = Rest,
-    sctp_decode_chunks(Tail, [sctp_chunk(Type, Flags, Length, Payload) | Acc]);
-sctp_decode_chunks(_, Acc) -> Acc.
+    case Length - 4 =< L of
+        true ->
+            [sctp_chunk(Type, Flags, Length, Rest) | Acc];
+        false ->
+            <<Payload:L/binary-unit:8, Tail/binary>> = Rest,
+            sctp_decode_chunks(Tail, [sctp_chunk(Type, Flags, Length, Payload) | Acc])
+    end.
 
 -spec sctp_chunk(byte(), byte(), non_neg_integer(), binary()) -> #sctp_chunk{}.
 sctp_chunk(Ctype, Cflags, Clen, Payload) ->
@@ -394,8 +399,10 @@ sctp_chunk(Ctype, Cflags, Clen, Payload) ->
     }.
 
 -spec sctp_chunk_payload(non_neg_integer(), binary()) -> #sctp_chunk_data{} | binary().
-sctp_chunk_payload(0, <<Tsn:32, Sid:16, Ssn:16, Ppi:32, Data/binary>>) ->
+sctp_chunk_payload(?SCTP_CHUNK_DATA, <<Tsn:32, Sid:16, Ssn:16, Ppi:32, Data/binary>>) ->
 	#sctp_chunk_data{tsn = Tsn, sid = Sid, ssn = Ssn, ppi = Ppi, data = Data};
+sctp_chunk_payload(?SCTP_CHUNK_HEARTBEAT_ACK, <<Type:16, _Length:16, Info/binary>>) ->
+    #sctp_chunk_heartbeat_ack{type = Type, info = Info};
 sctp_chunk_payload(_, Data) ->
 	Data.
 

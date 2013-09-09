@@ -118,6 +118,20 @@
 -define(ICMP6_PARAMPROB_OPTION, 2).         % unrecognized IPv6 option
 -define(ICMP6_ROUTER_RENUMBERING, 138).
 
+-define(SCTP_CHUNK_DATA, 0).                % Payload data
+-define(SCTP_CHUNK_INIT, 1).                % Initiation
+-define(SCTP_CHUNK_INIT_ACK, 2).            % Initiation acknowledgement
+-define(SCTP_CHUNK_SACK, 3).                % Selective acknowledgement
+-define(SCTP_CHUNK_HEARTBEAT, 4).           % Heartbeat request
+-define(SCTP_CHUNK_HEARTBEAT_ACK, 5).       % Heartbeat acknowledgement
+-define(SCTP_CHUNK_ABORT, 6).               % Abort
+-define(SCTP_CHUNK_SHUTDOWN, 7).            % Shutdown
+-define(SCTP_CHUNK_SHUTDOWN_ACK, 8).        % Shutdown acknowledgement
+-define(SCTP_CHUNK_ERROR, 9).               % Operation error
+-define(SCTP_CHUNK_COOKIE_ECHO, 10).        % State cookie
+-define(SCTP_CHUNK_COOKIE_ACK, 11).         % Cookie acknowledgement
+-define(SCTP_CHUNK_SHUTDOWN_COMPLETE, 14).  % Shutdown complete
+
 -record(linux_cooked, {
 	packet_type,
 	hrd = ?ARPHRD_ETHER,
@@ -211,6 +225,9 @@
 	tsn = 0, sid = 0, ssn = 0, ppi = 0, data
 	}).
 
+-record(sctp_chunk_heartbeat_ack, {
+    type = 1, info
+}).
 
 %% RFC 2784 - Generic Routing Encapsulation (GRE)
 -record(gre, {
