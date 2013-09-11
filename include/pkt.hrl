@@ -249,6 +249,8 @@
     cookie
 }).
 
+-record(sctp_chunk_cookie_ack, {}).
+
 -record(sctp_chunk_heartbeat, {
     type = 1, info
 }).

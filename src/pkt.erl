@@ -362,20 +362,12 @@ options(Offset, Payload) ->
 sctp(<<SPort:16, DPort:16, VTag:32, Sum:32, Payload/binary>>) ->
     SCTP = #sctp{
         sport = SPort, dport = DPort, vtag = VTag,
-        sum = Sum, chunks = sctp_decode_chunks(Payload)
+        sum = Sum, chunks = sctp_decode_chunks(Payload, [])
     },
     {SCTP, []}.
 
--spec sctp_decode_chunks(binary()) -> [#sctp_chunk{}].
-sctp_decode_chunks(Chunks) ->
-    sctp_decode_chunks(Chunks, []).
-
 -spec sctp_decode_chunks(binary(), list()) -> [#sctp_chunk{}].
 sctp_decode_chunks(<<>>, Acc) -> Acc;
-sctp_decode_chunks(<<_Type:8, _Flags:8, Length:16, Rest/binary>>, Acc)
-        when Length =< 4 ->
-    sctp_decode_chunks(Rest, Acc);
-
 sctp_decode_chunks(<<Type:8, Flags:8, Length:16, Rest/binary>>, Acc) ->
     L = case Length rem 4 of
         0 -> % No padding bytes
@@ -421,6 +413,8 @@ sctp_chunk_payload(?SCTP_CHUNK_INIT_ACK, <<Itag:32, Arwnd:32, OutStreams:16, InS
     };
 sctp_chunk_payload(?SCTP_CHUNK_COOKIE_ECHO, Cookie) ->
     #sctp_chunk_cookie_echo{cookie = Cookie};
+sctp_chunk_payload(?SCTP_CHUNK_COOKIE_ACK, <<>>) ->
+    #sctp_chunk_cookie_ack{};
 sctp_chunk_payload(?SCTP_CHUNK_HEARTBEAT, <<Type:16, _Length:16, Info/binary>>) ->
     #sctp_chunk_heartbeat{type = Type, info = Info};
 sctp_chunk_payload(?SCTP_CHUNK_HEARTBEAT_ACK, <<Type:16, _Length:16, Info/binary>>) ->
