@@ -419,6 +419,12 @@ sctp_chunk_payload(?SCTP_CHUNK_HEARTBEAT, <<Type:16, _Length:16, Info/binary>>) 
     #sctp_chunk_heartbeat{type = Type, info = Info};
 sctp_chunk_payload(?SCTP_CHUNK_HEARTBEAT_ACK, <<Type:16, _Length:16, Info/binary>>) ->
     #sctp_chunk_heartbeat_ack{type = Type, info = Info};
+sctp_chunk_payload(?SCTP_CHUNK_SHUTDOWN, <<TSN_ACK:32>>) ->
+    #sctp_chunk_shutdown{tsn_ack = TSN_ACK};
+sctp_chunk_payload(?SCTP_CHUNK_SHUTDOWN_ACK, <<>>) ->
+    #sctp_chunk_shutdown_ack{};
+sctp_chunk_payload(?SCTP_CHUNK_SHUTDOWN_COMPLETE, <<>>) ->
+    #sctp_chunk_shutdown_complete{};
 sctp_chunk_payload(_, Data) ->
 	Data.
 

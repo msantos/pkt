@@ -259,6 +259,13 @@
     type = 1, info
 }).
 
+-record(sctp_chunk_shutdown, {
+    tsn_ack
+}).
+
+-record(sctp_chunk_shutdown_ack, {}).
+-record(sctp_chunk_shutdown_complete, {}).
+
 %% RFC 2784 - Generic Routing Encapsulation (GRE)
 -record(gre, {
         c = 0, res0 = 0, ver = 0,
