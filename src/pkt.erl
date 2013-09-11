@@ -401,10 +401,53 @@ sctp_chunk(Ctype, Cflags, Clen, Payload) ->
 -spec sctp_chunk_payload(non_neg_integer(), binary()) -> #sctp_chunk_data{} | binary().
 sctp_chunk_payload(?SCTP_CHUNK_DATA, <<Tsn:32, Sid:16, Ssn:16, Ppi:32, Data/binary>>) ->
 	#sctp_chunk_data{tsn = Tsn, sid = Sid, ssn = Ssn, ppi = Ppi, data = Data};
+sctp_chunk_payload(?SCTP_CHUNK_INIT, <<Itag:32, Arwnd:32, OutStreams:16, InStreams:16, Tsn:32, Rest/binary>>) ->
+    #sctp_chunk_init{
+        itag = Itag,
+        a_rwnd = Arwnd,
+        outbound_streams = OutStreams,
+        inbound_streams = InStreams,
+        tsn = Tsn,
+        params = sctp_init_params(Rest, [])
+    };
 sctp_chunk_payload(?SCTP_CHUNK_HEARTBEAT_ACK, <<Type:16, _Length:16, Info/binary>>) ->
     #sctp_chunk_heartbeat_ack{type = Type, info = Info};
 sctp_chunk_payload(_, Data) ->
 	Data.
+
+sctp_init_params(<<>>, Acc) -> Acc;
+
+%% IPv4 Address Parameter
+sctp_init_params(<<5:16, 8:16, A:8, B:8, C:8, D:8, Rest/binary>>, Acc) ->
+    sctp_init_params(Rest, [{ipv4, {A, B, C, D}} | Acc]);
+%% IPv6 Address Parameter
+sctp_init_params(<<6:16, 20:16, Value:16/binary-unit:8, Rest/binary>>, Acc) ->
+    IP = list_to_tuple([N || N <- binary_to_list(Value)]),
+    sctp_init_params(Rest, [{ipv6, IP} | Acc]);
+%% Cookie Preservative
+sctp_init_params(<<9:16, 8:16, Value:32, Rest/binary>>, Acc) ->
+    sctp_init_params(Rest, [{cookie, Value} | Acc]);
+%% Host Name Address
+sctp_init_params(<<11:16, Length:16, Rest/binary>>, Acc) ->
+    <<Hostname:Length/binary-unit:8, Tail/binary>> = Rest,
+    sctp_init_params(Tail, [{hostname, Hostname} | Acc]);
+%% Supported Address Types
+sctp_init_params(<<12:16, Length:16, Rest/binary>>, Acc) ->
+    AddressType =
+        fun(5) -> ipv4;
+           (6) -> ipv6;
+           (11) -> hostname
+    end,
+    case Length rem 4 of
+        0 ->
+            <<Value:16, Tail/binary>> = Rest,
+            sctp_init_params(Tail, [{address_type, AddressType(Value)} | Acc]);
+        N ->
+            <<Value:16, _Padding:N/binary-unit:8, Tail/binary>> = Rest,
+            sctp_init_params(Tail, [{address_type, AddressType(Value)} | Acc])
+    end;
+%% Ignore ECN and Forward TSN parameters
+sctp_init_params(_, Acc) -> Acc.
 
 %%
 %% UDP

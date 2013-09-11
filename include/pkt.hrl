@@ -215,15 +215,26 @@
     }).
 
 -record(sctp, {
-	sport = 0, dport = 0, vtag = 0, sum = 0,
-	chunks = []
-	}).
+    sport = 0, dport = 0, vtag = 0, sum = 0,
+    chunks = []
+}).
+
 -record(sctp_chunk, {
-	type = 0, flags = 0, len = 0, payload = 0
-	}).
+    type = 0, flags = 0, len = 0, payload = 0
+}).
+
 -record(sctp_chunk_data, {
-	tsn = 0, sid = 0, ssn = 0, ppi = 0, data
-	}).
+    tsn = 0, sid = 0, ssn = 0, ppi = 0, data
+}).
+
+-record(sctp_chunk_init, {
+    itag :: pos_integer(),
+    a_rwnd :: non_neg_integer(),
+    outbound_streams :: pos_integer(),
+    inbound_streams :: pos_integer(),
+    tsn :: non_neg_integer(),
+    params  = [] :: [proplists:property()]
+}).
 
 -record(sctp_chunk_heartbeat_ack, {
     type = 1, info
