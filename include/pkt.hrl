@@ -236,6 +236,15 @@
     params  = [] :: [proplists:property()]
 }).
 
+-record(sctp_chunk_init_ack, {
+    itag :: pos_integer(),
+    a_rwnd :: non_neg_integer(),
+    outbound_streams :: pos_integer(),
+    inbound_streams :: pos_integer(),
+    tsn :: non_neg_integer(),
+    params  = [] :: [proplists:property()]
+}).
+
 -record(sctp_chunk_heartbeat_ack, {
     type = 1, info
 }).

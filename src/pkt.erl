@@ -410,6 +410,15 @@ sctp_chunk_payload(?SCTP_CHUNK_INIT, <<Itag:32, Arwnd:32, OutStreams:16, InStrea
         tsn = Tsn,
         params = sctp_init_params(Rest, [])
     };
+sctp_chunk_payload(?SCTP_CHUNK_INIT_ACK, <<Itag:32, Arwnd:32, OutStreams:16, InStreams:16, Tsn:32, Rest/binary>>) ->
+    #sctp_chunk_init_ack{
+        itag = Itag,
+        a_rwnd = Arwnd,
+        outbound_streams = OutStreams,
+        inbound_streams = InStreams,
+        tsn = Tsn,
+        params = sctp_init_params(Rest, [])
+    };
 sctp_chunk_payload(?SCTP_CHUNK_HEARTBEAT_ACK, <<Type:16, _Length:16, Info/binary>>) ->
     #sctp_chunk_heartbeat_ack{type = Type, info = Info};
 sctp_chunk_payload(_, Data) ->
@@ -424,6 +433,14 @@ sctp_init_params(<<5:16, 8:16, A:8, B:8, C:8, D:8, Rest/binary>>, Acc) ->
 sctp_init_params(<<6:16, 20:16, Value:16/binary-unit:8, Rest/binary>>, Acc) ->
     IP = list_to_tuple([N || N <- binary_to_list(Value)]),
     sctp_init_params(Rest, [{ipv6, IP} | Acc]);
+%% State cookie
+sctp_init_params(<<7:16, Length:16, Rest/binary>>, Acc) ->
+    <<Cookie:Length/binary-unit:8, Tail/binary>> = Rest,
+    sctp_init_params(Tail, [{state_cookie, Cookie} | Acc]);
+%% Unrecognized Parameter
+sctp_init_params(<<8:16, Length:16, Rest/binary>>, Acc) ->
+    <<Parameter:Length/binary-unit:8, Tail/binary>> = Rest,
+    sctp_init_params(Tail, [{unrecognized, Parameter} | Acc]);
 %% Cookie Preservative
 sctp_init_params(<<9:16, 8:16, Value:32, Rest/binary>>, Acc) ->
     sctp_init_params(Rest, [{cookie, Value} | Acc]);
