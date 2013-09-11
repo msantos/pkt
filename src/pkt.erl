@@ -371,7 +371,7 @@ sctp_decode_chunks(Chunks) ->
     sctp_decode_chunks(Chunks, []).
 
 -spec sctp_decode_chunks(binary(), list()) -> [#sctp_chunk{}].
-%sctp_decode_chunks(<<>>, Acc) -> Acc;
+sctp_decode_chunks(<<>>, Acc) -> Acc;
 sctp_decode_chunks(<<_Type:8, _Flags:8, Length:16, Rest/binary>>, Acc)
         when Length =< 4 ->
     sctp_decode_chunks(Rest, Acc);
