@@ -245,6 +245,10 @@
     params  = [] :: [proplists:property()]
 }).
 
+-record(sctp_chunk_cookie_echo, {
+    cookie
+}).
+
 -record(sctp_chunk_heartbeat, {
     type = 1, info
 }).
