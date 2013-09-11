@@ -431,7 +431,7 @@ sctp_init_params(<<5:16, 8:16, A:8, B:8, C:8, D:8, Rest/binary>>, Acc) ->
     sctp_init_params(Rest, [{ipv4, {A, B, C, D}} | Acc]);
 %% IPv6 Address Parameter
 sctp_init_params(<<6:16, 20:16, Value:16/binary-unit:8, Rest/binary>>, Acc) ->
-    IP = list_to_tuple([N || N <- binary_to_list(Value)]),
+    IP = list_to_tuple([N || <<N:16>> <= Value]),
     sctp_init_params(Rest, [{ipv6, IP} | Acc]);
 %% State cookie
 sctp_init_params(<<7:16, Length:16, Rest/binary>>, Acc) ->
