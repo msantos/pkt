@@ -435,18 +435,21 @@ sctp_init_params(<<6:16, 20:16, Value:16/binary-unit:8, Rest/binary>>, Acc) ->
     sctp_init_params(Rest, [{ipv6, IP} | Acc]);
 %% State cookie
 sctp_init_params(<<7:16, Length:16, Rest/binary>>, Acc) ->
-    <<Cookie:Length/binary-unit:8, Tail/binary>> = Rest,
+    L = Length - 4,
+    <<Cookie:L/binary-unit:8, Tail/binary>> = Rest,
     sctp_init_params(Tail, [{state_cookie, Cookie} | Acc]);
 %% Unrecognized Parameter
 sctp_init_params(<<8:16, Length:16, Rest/binary>>, Acc) ->
-    <<Parameter:Length/binary-unit:8, Tail/binary>> = Rest,
+    L = Length - 4,
+    <<Parameter:L/binary-unit:8, Tail/binary>> = Rest,
     sctp_init_params(Tail, [{unrecognized, Parameter} | Acc]);
 %% Cookie Preservative
 sctp_init_params(<<9:16, 8:16, Value:32, Rest/binary>>, Acc) ->
     sctp_init_params(Rest, [{cookie, Value} | Acc]);
 %% Host Name Address
 sctp_init_params(<<11:16, Length:16, Rest/binary>>, Acc) ->
-    <<Hostname:Length/binary-unit:8, Tail/binary>> = Rest,
+    L = Length - 4,
+    <<Hostname:L/binary-unit:8, Tail/binary>> = Rest,
     sctp_init_params(Tail, [{hostname, Hostname} | Acc]);
 %% Supported Address Types
 sctp_init_params(<<12:16, Length:16, Rest/binary>>, Acc) ->
