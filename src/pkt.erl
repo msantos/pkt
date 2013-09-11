@@ -419,6 +419,8 @@ sctp_chunk_payload(?SCTP_CHUNK_INIT_ACK, <<Itag:32, Arwnd:32, OutStreams:16, InS
         tsn = Tsn,
         params = sctp_init_params(Rest, [])
     };
+sctp_chunk_payload(?SCTP_CHUNK_HEARTBEAT, <<Type:16, _Length:16, Info/binary>>) ->
+    #sctp_chunk_heartbeat{type = Type, info = Info};
 sctp_chunk_payload(?SCTP_CHUNK_HEARTBEAT_ACK, <<Type:16, _Length:16, Info/binary>>) ->
     #sctp_chunk_heartbeat_ack{type = Type, info = Info};
 sctp_chunk_payload(_, Data) ->

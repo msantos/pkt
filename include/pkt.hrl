@@ -245,6 +245,10 @@
     params  = [] :: [proplists:property()]
 }).
 
+-record(sctp_chunk_heartbeat, {
+    type = 1, info
+}).
+
 -record(sctp_chunk_heartbeat_ack, {
     type = 1, info
 }).
