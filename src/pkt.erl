@@ -425,6 +425,8 @@ sctp_chunk_payload(?SCTP_CHUNK_SHUTDOWN_ACK, <<>>) ->
     #sctp_chunk_shutdown_ack{};
 sctp_chunk_payload(?SCTP_CHUNK_SHUTDOWN_COMPLETE, <<>>) ->
     #sctp_chunk_shutdown_complete{};
+sctp_chunk_payload(?SCTP_CHUNK_ABORT, Errors) ->
+    #sctp_chunk_abort{error_causes = sctp_error_causes(Errors, [])};
 sctp_chunk_payload(_, Data) ->
 	Data.
 
@@ -472,6 +474,67 @@ sctp_init_params(<<12:16, Length:16, Rest/binary>>, Acc) ->
     end;
 %% Ignore ECN and Forward TSN parameters
 sctp_init_params(_, Acc) -> Acc.
+
+sctp_error_causes(<<>>, Acc) ->
+    Acc;
+sctp_error_causes(<<Code:16, Length:16, Rest/binary>>, Acc) ->
+    L = Length - 4,
+    <<Opts:L/binary-unit:8, Tail/binary>> = Rest,
+    sctp_error_causes(Tail, [sctp_error(Code, L, Opts) | Acc]).
+
+sctp_error(1, _Length, <<Ident:16, _Reserved:8>>) ->
+    #sctp_error_cause{
+        code = 1,
+        descr = sctp_format_error(1),
+        opts = [
+            {stream_identifier, Ident}
+        ]
+    };
+sctp_error(12, Length, Opts) ->
+    <<Reason:Length/binary-unit:8>> = Opts,
+    #sctp_error_cause{
+        code = 12,
+        descr = sctp_format_error(12),
+        opts = [
+            {abort_reason, Reason}
+        ]
+    };
+%% FIXME: add more error causes
+sctp_error(Code, _Length, Opts) ->
+    #sctp_error_cause{
+        code = Code,
+        descr = sctp_format_error(Code),
+        opts = [
+            {data = Opts}
+        ]
+    }.
+
+sctp_format_error(1) ->
+    "Invalid Stream Identifier";
+sctp_format_error(2) ->
+    "Missing Mandatory Parameter";
+sctp_format_error(3) ->
+    "Stale Cookie Error";
+sctp_format_error(4) ->
+    "Out of Resource";
+sctp_format_error(5) ->
+    "Unresolvable Address";
+sctp_format_error(6) ->
+    "Unrecognized Chunk Type";
+sctp_format_error(7) ->
+    "Invalid Mandatory Parameter";
+sctp_format_error(8) ->
+    "Unrecognized Parameters";
+sctp_format_error(9) ->
+    "No User Data";
+sctp_format_error(10) ->
+    "Cookie Received While Shutting Down";
+sctp_format_error(11) ->
+    "Restart of an Association with New Addresses";
+sctp_format_error(12) ->
+    "User Initiated Abort";
+sctp_format_error(13) ->
+    "Protocol Violation".
 
 %%
 %% UDP

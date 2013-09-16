@@ -246,25 +246,35 @@
 }).
 
 -record(sctp_chunk_cookie_echo, {
-    cookie
+    cookie :: binary()
 }).
 
 -record(sctp_chunk_cookie_ack, {}).
 
 -record(sctp_chunk_heartbeat, {
-    type = 1, info
+    type = 1, info :: binary()
 }).
 
 -record(sctp_chunk_heartbeat_ack, {
-    type = 1, info
+    type = 1, info :: binary()
 }).
 
 -record(sctp_chunk_shutdown, {
-    tsn_ack
+    tsn_ack :: non_neg_integer()
 }).
 
 -record(sctp_chunk_shutdown_ack, {}).
 -record(sctp_chunk_shutdown_complete, {}).
+
+-record(sctp_error_cause, {
+    code :: 1..13,
+    descr :: string(),
+    opts = [] :: [proplists:property()]
+}).
+
+-record(sctp_chunk_abort, {
+    error_causes = [] :: [#sctp_error_cause{}]
+}).
 
 %% RFC 2784 - Generic Routing Encapsulation (GRE)
 -record(gre, {
