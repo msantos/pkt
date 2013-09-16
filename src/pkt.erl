@@ -411,6 +411,17 @@ sctp_chunk_payload(?SCTP_CHUNK_INIT_ACK, <<Itag:32, Arwnd:32, OutStreams:16, InS
         tsn = Tsn,
         params = sctp_init_params(Rest, [])
     };
+sctp_chunk_payload(?SCTP_CHUNK_SACK, <<TSN_ACK:32, Arwnd:32, GapsN:16, DuplicateTSN:16, Rest/binary>>) ->
+    GapsLength = GapsN * 4, %% Gap Ack start (16), Gap Ack end (16)
+    <<Gaps:GapsLength/binary-unit:8, TSNs/binary>> = Rest,
+    #sctp_chunk_sack{
+        tsn_ack = TSN_ACK,
+        a_rwnd = Arwnd,
+        number_gap_ack_blocks = GapsN,
+        number_duplicate_tsn = DuplicateTSN,
+        gap_ack_blocks = [{Start, End} || <<Start:16, End:16>> <= Gaps],
+        duplicate_tsns = [T || <<T:32>> <= TSNs]
+    };
 sctp_chunk_payload(?SCTP_CHUNK_COOKIE_ECHO, Cookie) ->
     #sctp_chunk_cookie_echo{cookie = Cookie};
 sctp_chunk_payload(?SCTP_CHUNK_COOKIE_ACK, <<>>) ->

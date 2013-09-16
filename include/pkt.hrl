@@ -245,6 +245,15 @@
     params  = [] :: [proplists:property()]
 }).
 
+-record(sctp_chunk_sack, {
+    tsn_ack :: non_neg_integer(),
+    a_rwnd :: non_neg_integer(),
+    number_gap_ack_blocks :: non_neg_integer(),
+    number_duplicate_tsn :: non_neg_integer(),
+    gap_ack_blocks :: [{non_neg_integer(), non_neg_integer()}],
+    duplicate_tsns :: [non_neg_integer()]
+}).
+
 -record(sctp_chunk_cookie_echo, {
     cookie :: binary()
 }).
