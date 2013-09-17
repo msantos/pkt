@@ -16,7 +16,10 @@ sctp_test_() ->
         sctp_sack_chunk(),
         sctp_heartbeat_chunk(),
         sctp_heartbeat_ack_chunk(),
-        sctp_abort_chunk()
+        sctp_abort_chunk(),
+        sctp_shutdown_chunk(),
+        sctp_shutdown_ack_chunk(),
+        sctp_shutdown_complete_chunk()
     ].
 
 sctp_init_chunk() ->
@@ -154,6 +157,41 @@ sctp_abort_chunk() ->
                         ]}
                     ]}
                 }]
+        }, []
+    },
+    ?_assertEqual(Result, pkt:sctp(Data)).
+
+sctp_shutdown_chunk() ->
+    {ok, Data} = file:read_file(?SCTP_DATA_FILE("shutdown.raw")),
+    Result = {
+        #sctp{
+            sport = 44282,dport = 2006,vtag = 3894864518,sum = 3455106587,chunks = [
+                #sctp_chunk{type = 7,flags = 0,len = 4,payload =
+                    #sctp_chunk_shutdown{tsn_ack = 430357211}
+                }
+            ]
+        }, []
+    },
+    ?_assertEqual(Result, pkt:sctp(Data)).
+
+sctp_shutdown_ack_chunk() ->
+    {ok, Data} = file:read_file(?SCTP_DATA_FILE("shutdown_ack.raw")),
+    Result = {
+        #sctp{
+            sport = 2006,dport = 44282,vtag = 1619613099,sum = 3544315687,chunks = [
+                #sctp_chunk{type = 8,flags = 0,len = 0,payload = #sctp_chunk_shutdown_ack{}}
+            ]
+        }, []
+    },
+    ?_assertEqual(Result, pkt:sctp(Data)).
+
+sctp_shutdown_complete_chunk() ->
+    {ok, Data} = file:read_file(?SCTP_DATA_FILE("shutdown_complete.raw")),
+    Result = {
+        #sctp{
+            sport = 44282,dport = 2006,vtag = 3894864518,sum = 2141610842,chunks = [
+                #sctp_chunk{type = 14,flags = 0,len = 0,payload = #sctp_chunk_shutdown_complete{}}
+            ]
         }, []
     },
     ?_assertEqual(Result, pkt:sctp(Data)).
