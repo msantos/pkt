@@ -14,7 +14,7 @@ compile: $(REBAR)
 clean: $(REBAR)
 	@$(REBAR) clean
 
-test:
+test: compile
 	@$(REBAR) xref eunit
 
 .PHONY: test
