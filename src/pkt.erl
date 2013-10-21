@@ -56,7 +56,6 @@
         ipv6/1,
         proto/1,
         tcp/1,
-        tcp_options/1,
         udp/1,
         sctp/1,
         dlt/1
@@ -185,9 +184,6 @@ gre(N) ->
 %%
 tcp(N) ->
     pkt_tcp:codec(N).
-
-tcp_options(N) ->
-    pkt_tcp:tcp_options(N).
 
 %%
 %% SCTP

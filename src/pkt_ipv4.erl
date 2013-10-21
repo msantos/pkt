@@ -43,7 +43,8 @@ codec(
     DA1:8, DA2:8, DA3:8, DA4:8,
     Rest/binary>>
 ) when HL >= 5 ->
-    {Opt, Payload} = options(HL, Rest),
+    OptLen = (HL - 5) * 4,
+    <<Opt:OptLen/binary, Payload/binary>> = Rest,
     {#ipv4{
         hl = HL, tos = ToS, len = Len,
         id = Id, df = DF, mf = MF,
@@ -67,8 +68,3 @@ codec(#ipv4{
     SA1:8, SA2:8, SA3:8, SA4:8,
     DA1:8, DA2:8, DA3:8, DA4:8,
     Opt/binary, 0:Pad>>.
-
-options(Offset, Binary) ->
-    Length = (Offset - 5) * 4,
-    <<Options:Length/binary, Payload/binary>> = Binary,
-    {Options, Payload}.

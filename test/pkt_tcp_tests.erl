@@ -13,7 +13,7 @@ tcp_decode_encode() ->
     Packet = <<0,80,217,184,222,13,22,43,241,75,9,12,176,18,17,4,140,86,
         0,0,2,4,5,172,1, 3,3,0,1,1,8,10,190,15,172,236,0,64,161,73,4,2,0,0>>,
     {TCP, <<>>} = pkt:tcp(Packet),
-    TCP1 = TCP#tcp{opt = pkt:tcp_options(pkt:tcp_options(TCP#tcp.opt))},
+    TCP1 = TCP#tcp{opt = pkt_tcp:options(pkt_tcp:options(TCP#tcp.opt))},
     ?_assertEqual(Packet, pkt:tcp(TCP1)).
 
 tcp_checksum4() ->
