@@ -217,5 +217,5 @@ tcp_checksum4() ->
 
     [#ether{}, IPv4, #tcp{sum = Sum} = TCP, Payload] = pkt:decapsulate(Frame),
 
-    ?_assertEqual(Sum, pkt:makesum([IPv4, TCP#tcp{sum = 0}, Payload])),
+    Sum = pkt:makesum([IPv4, TCP#tcp{sum = 0}, Payload]),
     ?_assertEqual(0, pkt:makesum([IPv4, TCP, Payload])).

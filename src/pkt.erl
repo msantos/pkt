@@ -784,14 +784,17 @@ icmp6(#icmp6{
 % TCP pseudoheader checksum
 checksum([#ipv4{
         saddr = {SA1,SA2,SA3,SA4},
-        daddr = {DA1,DA2,DA3,DA4}
+        daddr = {DA1,DA2,DA3,DA4},
+        len = IPLen,
+        hl = HL
     },
     #tcp{
         off = Off
     } = TCPhdr,
     Payload
 ]) ->
-    Len = Off * 4 + byte_size(Payload),
+    Len = IPLen - (HL * 4),
+    PayloadLen = IPLen - ((HL * 4) + (Off * 4)),
     Pad = case Len rem 2 of
         0 -> 0;
         1 -> 8
@@ -804,7 +807,7 @@ checksum([#ipv4{
           ?IPPROTO_TCP:8,
           Len:16,
           TCP/binary,
-          Payload/bits,
+          Payload:PayloadLen/binary,
           0:Pad>>
     );
 
