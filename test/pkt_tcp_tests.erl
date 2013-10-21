@@ -3,7 +3,7 @@
 -include_lib("pkt/include/pkt.hrl").
 -include_lib("eunit/include/eunit.hrl").
 
-tcp_test_() ->
+codec_test_() ->
     [
         tcp_decode_encode(),
         tcp_checksum4()
@@ -17,12 +17,13 @@ tcp_decode_encode() ->
     ?_assertEqual(Packet, pkt:tcp(TCP1)).
 
 tcp_checksum4() ->
-    Frame = <<224,105,149,59,163,24,0,22,182,181,62,198,8,0,69,0,0,54,2,108,64,
-              0,53,6,172,243,173,192,82,195,192,168,213,54,0,80,143,166,75,154,
-              212,181,116,33,53,92,128,24,0,126,60,199,0,0,1,1,8,10,92,104,96,
-              16,22,69,237,136,137,0>>,
+    Packet = <<69,0,0,54,2,108,64,0,53,6,172,243,173,192,82,195,192,
+             168,213,54,0,80,143,166,75,154,212,181,116,33,53,92,128,
+             24,0,126,60,199,0,0,1,1,8,10,92,104,96,16,22,69,237,136,
+             137,0>>,
 
-    [#ether{}, IPv4, #tcp{sum = Sum} = TCP, Payload] = pkt:decapsulate(Frame),
+    {IPv4, Payload0} = pkt:ipv4(Packet),
+    {TCP, Payload} = pkt:tcp(Payload0),
 
     Sum = pkt:makesum([IPv4, TCP#tcp{sum = 0}, Payload]),
     ?_assertEqual(0, pkt:makesum([IPv4, TCP, Payload])).

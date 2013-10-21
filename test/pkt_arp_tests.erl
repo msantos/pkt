@@ -3,7 +3,7 @@
 -include_lib("pkt/include/pkt.hrl").
 -include_lib("eunit/include/eunit.hrl").
 
-arp_test_() ->
+codec_test_() ->
     [
         decode(),
         encode()
@@ -16,7 +16,7 @@ packet() ->
       0,0,0,0,0,0,0,0,0,0,0,129,1,10,104>>.
 
 decode() ->
-    {ARP, Payload} = pkt:arp(packet()),
+    {Header, Payload} = pkt:arp(packet()),
     ?_assertEqual(
         {{arp,65535,65535,255,255,22,
           <<182,181,62,198,8,6>>,
@@ -25,10 +25,10 @@ decode() ->
           {182,181,62,198}},
           <<192,168,213,1,0,0,0,0,0,0,192,168,213,128,0,0,0,0,0,0,
             0,0,0,0,0,0,0,0,129,1,10,104>>},
-        {ARP, Payload}
+        {Header, Payload}
     ).
 
 encode() ->
     Packet = packet(),
-    {ARP, Payload} = pkt:arp(Packet),
-    ?_assertEqual(Packet, <<(pkt:arp(ARP))/binary, Payload/binary>>).
+    {Header, Payload} = pkt:arp(Packet),
+    ?_assertEqual(Packet, <<(pkt:arp(Header))/binary, Payload/binary>>).

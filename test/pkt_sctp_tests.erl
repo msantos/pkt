@@ -6,7 +6,7 @@
 
 -define(SCTP_DATA_FILE(File), filename:join(["../test/sctp_data/", File])).
 
-sctp_test_() ->
+codec_test_() ->
     [
         sctp_init_chunk(),
         sctp_init_ack_chunk(),
