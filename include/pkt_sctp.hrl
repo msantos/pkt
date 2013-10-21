@@ -13,8 +13,9 @@
 -define(SCTP_CHUNK_SHUTDOWN_COMPLETE, 14).  % Shutdown complete
 
 -record(sctp, {
-    sport = 0, dport = 0, vtag = 0, sum = 0,
-    chunks = []
+    sport = 0 :: inet:port_number(),
+    dport = 0 :: inet:port_number(),
+    vtag = 0, sum = 0, chunks = []
 }).
 
 -record(sctp_chunk, {
