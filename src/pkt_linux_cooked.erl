@@ -30,7 +30,9 @@
 %% POSSIBILITY OF SUCH DAMAGE.
 -module(pkt_linux_cooked).
 
--include("pkt.hrl").
+-include("pkt_ether.hrl").
+-include("pkt_arp.hrl").
+-include("pkt_linux_cooked.hrl").
 
 -export([codec/1]).
 

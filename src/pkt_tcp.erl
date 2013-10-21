@@ -30,7 +30,7 @@
 %% POSSIBILITY OF SUCH DAMAGE.
 -module(pkt_tcp).
 
--include("pkt.hrl").
+-include("pkt_tcp.hrl").
 
 -export([
         codec/1,

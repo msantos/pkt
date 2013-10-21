@@ -30,7 +30,8 @@
 %% POSSIBILITY OF SUCH DAMAGE.
 -module(pkt_arp).
 
--include("pkt.hrl").
+-include("pkt_ether.hrl").
+-include("pkt_arp.hrl").
 
 -export([codec/1]).
 

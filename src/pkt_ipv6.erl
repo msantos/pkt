@@ -30,7 +30,8 @@
 %% POSSIBILITY OF SUCH DAMAGE.
 -module(pkt_ipv6).
 
--include("pkt.hrl").
+-include("pkt_ipproto.hrl").
+-include("pkt_ipv6.hrl").
 
 -export([codec/1]).
 

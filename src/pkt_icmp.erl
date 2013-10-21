@@ -30,7 +30,7 @@
 %% POSSIBILITY OF SUCH DAMAGE.
 -module(pkt_icmp).
 
--include("pkt.hrl").
+-include("pkt_icmp.hrl").
 
 -export([codec/1]).
 

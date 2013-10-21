@@ -30,7 +30,7 @@
 %% POSSIBILITY OF SUCH DAMAGE.
 -module(pkt_dlt).
 
--include("pkt.hrl").
+-include("pkt_dlt.hrl").
 
 -export([codec/1]).
 

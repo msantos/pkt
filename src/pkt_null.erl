@@ -30,7 +30,8 @@
 %% POSSIBILITY OF SUCH DAMAGE.
 -module(pkt_null).
 
--include("pkt.hrl").
+-include("pkt_protocol_family.hrl").
+-include("pkt_null.hrl").
 
 -export([codec/1]).
 

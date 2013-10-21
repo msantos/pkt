@@ -1,0 +1,18 @@
+-ifndef(PF_UNSPEC).
+-define(PF_UNSPEC,0).                       % Unspecified.
+-endif.
+-ifndef(PF_LOCAL).
+-define(PF_LOCAL, 1).                       % Local to host (pipes and file-domain).
+-endif.
+-ifndef(PF_UNIX).
+-define(PF_UNIX, ?PF_LOCAL).                % POSIX name for PF_LOCAL.
+-endif.
+-ifndef(PF_INET).
+-define(PF_INET, 2).                        % IP protocol family.
+-endif.
+-ifndef(PF_INET6).
+-define(PF_INET6, 10).                      % IP version 6.
+-endif.
+-ifndef(PF_PACKET).
+-define(PF_PACKET, 17).                     % Packet family.
+-endif.
