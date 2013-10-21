@@ -19,7 +19,8 @@ sctp_test_() ->
         sctp_abort_chunk(),
         sctp_shutdown_chunk(),
         sctp_shutdown_ack_chunk(),
-        sctp_shutdown_complete_chunk()
+        sctp_shutdown_complete_chunk(),
+        tcp_decode_encode()
     ].
 
 sctp_init_chunk() ->
@@ -195,3 +196,10 @@ sctp_shutdown_complete_chunk() ->
         }, []
     },
     ?_assertEqual(Result, pkt:sctp(Data)).
+
+tcp_decode_encode() ->
+    Packet = <<0,80,217,184,222,13,22,43,241,75,9,12,176,18,17,4,140,86,
+        0,0,2,4,5,172,1, 3,3,0,1,1,8,10,190,15,172,236,0,64,161,73,4,2,0,0>>,
+    {TCP, <<>>} = pkt:tcp(Packet),
+    TCP1 = TCP#tcp{opt = pkt:tcp_options(pkt:tcp_options(TCP#tcp.opt))},
+    ?_assertEqual(Packet, pkt:tcp(TCP1)).
