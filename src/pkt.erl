@@ -43,8 +43,7 @@
 
 -export([
         checksum/1,
-        decapsulate/1,
-        decapsulate_dlt/2,
+        decapsulate/1, decapsulate/2,
         makesum/1,
         ether/1,
         ether_type/1,
@@ -64,8 +63,8 @@
         dlt/1
 ]).
 
-decapsulate_dlt(Dlt, Data) ->
-    decapsulate({link_type(Dlt), Data}, []).
+decapsulate(DLT, Data) ->
+    decapsulate({DLT, Data}).
 
 decapsulate({DLT, Data}) when is_integer(DLT) ->
     decapsulate({link_type(DLT), Data}, []);
