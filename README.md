@@ -50,8 +50,17 @@ types.
                 Header = #tcp{} | #udp{}
                 Payload = binary()
     
-        Calculate the checksum of the packet. 
+        Calculate the checksum of the packet.
 
+        When computing the checksum, the header sum field must be set
+        to 0:
+
+            Sum = pkt:makesum([IPv4, TCP#tcp{sum = 0}, Payload]).
+
+        For verifcation, the checksum can be compared to the value in
+        the header or:
+
+            0 = pkt:makesum([IPv4, TCP, Payload]).
 
 ## TODO
 
@@ -67,16 +76,6 @@ types.
 
 ## CONTRIBUTORS
 
-* Olivier Girondel:
-    * preliminary IPv6 support
+Thanks to everyone who has contributed code, discussion and bug reports!
 
-* Harald Welte:
-    * support reading packets from pcap file
-    * SCTP support
-    * datalink types
-
-* Gregory Haskins:
-    * application file fix
-
-* Alexey Larin
-    * GRE support
+https://github.com/msantos/pkt/graphs/contributors

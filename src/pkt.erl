@@ -797,7 +797,7 @@ checksum([#ipv4{
         0 -> 0;
         1 -> 8
     end,
-    TCP = tcp(TCPhdr#tcp{sum = 0}),
+    TCP = tcp(TCPhdr),
     checksum(
         <<SA1,SA2,SA3,SA4,
           DA1,DA2,DA3,DA4,
@@ -819,7 +819,7 @@ checksum([#ipv4{
     } = Hdr,
     Payload
 ]) ->
-    UDP = udp(Hdr#udp{sum = 0}),
+    UDP = udp(Hdr),
     Pad = case Len rem 2 of
         0 -> 0;
         1 -> 8

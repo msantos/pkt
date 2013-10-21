@@ -1,7 +1,7 @@
 -module(pkt_tests).
 
--include("pkt.hrl").
 -include("pkt_tests.hrl").
+-include_lib("pkt/include/pkt.hrl").
 -include_lib("eunit/include/eunit.hrl").
 
 -define(SCTP_DATA_FILE(File), filename:join(["../test/sctp_data/", File])).
@@ -19,8 +19,13 @@ sctp_test_() ->
         sctp_abort_chunk(),
         sctp_shutdown_chunk(),
         sctp_shutdown_ack_chunk(),
-        sctp_shutdown_complete_chunk(),
-        tcp_decode_encode()
+        sctp_shutdown_complete_chunk()
+    ].
+
+tcp_test_() ->
+    [
+        tcp_decode_encode(),
+        tcp_checksum4()
     ].
 
 sctp_init_chunk() ->
@@ -203,3 +208,14 @@ tcp_decode_encode() ->
     {TCP, <<>>} = pkt:tcp(Packet),
     TCP1 = TCP#tcp{opt = pkt:tcp_options(pkt:tcp_options(TCP#tcp.opt))},
     ?_assertEqual(Packet, pkt:tcp(TCP1)).
+
+tcp_checksum4() ->
+    Frame = <<224,105,149,59,163,24,0,22,182,181,62,198,8,0,69,0,0,54,2,108,64,
+              0,53,6,172,243,173,192,82,195,192,168,213,54,0,80,143,166,75,154,
+              212,181,116,33,53,92,128,24,0,126,60,199,0,0,1,1,8,10,92,104,96,
+              16,22,69,237,136,137,0>>,
+
+    [#ether{}, IPv4, #tcp{sum = Sum} = TCP, Payload] = pkt:decapsulate(Frame),
+
+    ?_assertEqual(Sum, pkt:makesum([IPv4, TCP#tcp{sum = 0}, Payload])),
+    ?_assertEqual(0, pkt:makesum([IPv4, TCP, Payload])).
