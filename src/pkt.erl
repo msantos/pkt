@@ -46,7 +46,6 @@
         decapsulate/1,
         decapsulate_dlt/2,
         makesum/1,
-        valid/1,
         ether/1,
         ether_type/1,
         link_type/1,
@@ -845,10 +844,6 @@ makesum(Hdr) -> 16#FFFF - checksum(Hdr).
 compl(N) when N =< 16#FFFF -> N;
 compl(N) -> (N band 16#FFFF) + (N bsr 16).
 compl(N,S) -> compl(N+S).
-
-valid(16#FFFF) -> true;
-valid(_) -> false.
-
 
 %%
 %% Datalink types
