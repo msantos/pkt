@@ -6,7 +6,8 @@
 codec_test_() ->
     [
         decode(),
-        encode()
+        encode(),
+        type()
     ].
 
 packet() ->
@@ -28,3 +29,6 @@ encode() ->
     Packet = packet(),
     {Header, Payload} = pkt:ether(Packet),
     ?_assertEqual(Packet, <<(pkt:ether(Header))/binary, Payload/binary>>).
+
+type() ->
+    ?_assertEqual(ipv4, pkt_ether:type(?ETH_P_IP)).
