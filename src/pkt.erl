@@ -43,7 +43,8 @@
 
 -export([
         checksum/1,
-        decapsulate/1,
+        decapsulate/1, decapsulate/2,
+        decode/1, decode/2,
         makesum/1,
         ether/1,
         ether_type/1,
@@ -54,166 +55,215 @@
         icmp6/1,
         ipv4/1,
         ipv6/1,
-        proto/1,
+        ipproto/1, proto/1,
         tcp/1,
+        tcp_options/1,
         udp/1,
         sctp/1,
-        dlt/1
+        dlt/1, link_type/1
 ]).
 
+decapsulate(DLT, Data) ->
+    decapsulate({DLT, Data}).
+
 decapsulate({DLT, Data}) when is_integer(DLT) ->
-    decapsulate({dlt(DLT), Data}, []);
+    decapsulate_next({link_type(DLT), Data}, []);
 decapsulate({DLT, Data}) when is_atom(DLT) ->
-    decapsulate({DLT, Data}, []);
+    decapsulate_next({DLT, Data}, []);
 decapsulate(Data) when is_binary(Data) ->
-    decapsulate({en10mb, Data}, []).
+    decapsulate_next({en10mb, Data}, []).
 
-decapsulate(stop, Packet) ->
-    lists:reverse(Packet);
-
-decapsulate({unsupported, Data}, Packet) ->
-    decapsulate(stop, [{unsupported, Data}|Packet]);
-
-decapsulate({null, Data}, Packet) when byte_size(Data) >= 16 ->
+decapsulate_next({null, Data}, Packet) when byte_size(Data) >= 16 ->
     {Hdr, Payload} = null(Data),
-    decapsulate({family(Hdr#null.family), Payload}, [Hdr|Packet]);
-decapsulate({linux_sll, Data}, Packet) when byte_size(Data) >= 16 ->
+    decapsulate_next({next(Hdr), Payload}, [Hdr|Packet]);
+decapsulate_next({linux_sll, Data}, Packet) when byte_size(Data) >= 16 ->
     {Hdr, Payload} = linux_cooked(Data),
-    decapsulate({ether_type(Hdr#linux_cooked.pro), Payload}, [Hdr|Packet]);
-decapsulate({en10mb, Data}, Packet) when byte_size(Data) >= ?ETHERHDRLEN ->
+    decapsulate_next({next(Hdr), Payload}, [Hdr|Packet]);
+decapsulate_next({en10mb, Data}, Packet) when byte_size(Data) >= ?ETHERHDRLEN ->
     {Hdr, Payload} = ether(Data),
-    decapsulate({ether_type(Hdr#ether.type), Payload}, [Hdr|Packet]);
-decapsulate({arp, Data}, Packet) when byte_size(Data) >= 28 -> % IPv4 ARP
-    {Hdr, Payload} = arp(Data),
-    decapsulate(stop, [Payload, Hdr|Packet]);
+    decapsulate_next({next(Hdr), Payload}, [Hdr|Packet]);
 
-decapsulate({ipv4, Data}, Packet) when byte_size(Data) >= ?IPV4HDRLEN ->
+decapsulate_next({ipv4, Data}, Packet) when byte_size(Data) >= ?IPV4HDRLEN ->
     {Hdr, Payload} = ipv4(Data),
-    decapsulate({proto(Hdr#ipv4.p), Payload}, [Hdr|Packet]);
-decapsulate({ipv6, Data}, Packet) when byte_size(Data) >= ?IPV6HDRLEN ->
+    decapsulate_next({next(Hdr), Payload}, [Hdr|Packet]);
+decapsulate_next({ipv6, Data}, Packet) when byte_size(Data) >= ?IPV6HDRLEN ->
     {Hdr, Payload} = ipv6(Data),
-    decapsulate({proto(Hdr#ipv6.next), Payload}, [Hdr|Packet]);
-%% GRE
-decapsulate({gre, Data}, Packet) when byte_size(Data) >= ?GREHDRLEN ->
+    decapsulate_next({next(Hdr), Payload}, [Hdr|Packet]);
+decapsulate_next({gre, Data}, Packet) when byte_size(Data) >= ?GREHDRLEN ->
     {Hdr, Payload} = gre(Data),
-    decapsulate({ether_type(Hdr#gre.type), Payload}, [Hdr|Packet]);
+    decapsulate_next({next(Hdr), Payload}, [Hdr|Packet]);
 
-decapsulate({tcp, Data}, Packet) when byte_size(Data) >= ?TCPHDRLEN ->
+decapsulate_next({arp, Data}, Packet) when byte_size(Data) >= 28 ->
+    {Hdr, Payload} = arp(Data),
+    lists:reverse([Payload, Hdr|Packet]);
+decapsulate_next({tcp, Data}, Packet) when byte_size(Data) >= ?TCPHDRLEN ->
     {Hdr, Payload} = tcp(Data),
-    decapsulate(stop, [Payload, Hdr|Packet]);
-decapsulate({udp, Data}, Packet) when byte_size(Data) >= ?UDPHDRLEN ->
+    lists:reverse([Payload, Hdr|Packet]);
+decapsulate_next({udp, Data}, Packet) when byte_size(Data) >= ?UDPHDRLEN ->
     {Hdr, Payload} = udp(Data),
-    decapsulate(stop, [Payload, Hdr|Packet]);
-decapsulate({sctp, Data}, Packet) when byte_size(Data) >= 12 ->
+    lists:reverse([Payload, Hdr|Packet]);
+decapsulate_next({sctp, Data}, Packet) when byte_size(Data) >= 12 ->
     {Hdr, Payload} = sctp(Data),
-    decapsulate(stop, [Payload, Hdr|Packet]);
-decapsulate({icmp, Data}, Packet) when byte_size(Data) >= ?ICMPHDRLEN ->
+    lists:reverse([Payload, Hdr|Packet]);
+decapsulate_next({icmp, Data}, Packet) when byte_size(Data) >= ?ICMPHDRLEN ->
     {Hdr, Payload} = icmp(Data),
-    decapsulate(stop, [Payload, Hdr|Packet]);
-decapsulate({icmp6, Data}, Packet) when byte_size(Data) >= ?ICMP6HDRLEN ->
+    lists:reverse([Payload, Hdr|Packet]);
+decapsulate_next({icmp6, Data}, Packet) when byte_size(Data) >= ?ICMP6HDRLEN ->
     {Hdr, Payload} = icmp6(Data),
-    decapsulate(stop, [Payload, Hdr|Packet]);
-decapsulate({_, Data}, Packet) ->
-    decapsulate(stop, [{truncated, Data}|Packet]).
+    lists:reverse([Payload, Hdr|Packet]);
+decapsulate_next({_, Data}, Packet) ->
+    lists:reverse([{truncated, Data}|Packet]).
 
+decode(Data) when is_binary(Data) ->
+    decode(en10mb, Data).
+
+decode(Proto, Data) when is_atom(Proto) ->
+    try decode_next({Proto, Data}, []) of
+        N ->
+            N
+    catch
+        error:_ ->
+            {error, [], {unsupported, Data}}
+    end.
+
+% Aliases
+decode_next({en10mb, Data}, Packet) ->
+    decode_next({ether, Data}, Packet);
+decode_next({linux_sll, Data}, Packet) ->
+    decode_next({linux_cooked, Data}, Packet);
+
+% Protocols pointing to next header
+decode_next({Proto, Data}, Packet) when
+    Proto =:= ether;
+    Proto =:= gre;
+    Proto =:= ipv4;
+    Proto =:= ipv6;
+    Proto =:= linux_cooked;
+    Proto =:= null ->
+    try_decode_next(Proto, Data, Packet);
+
+% Data follows header
+decode_next({Proto, Data}, Packet) when
+    Proto =:= arp;
+    Proto =:= icmp;
+    Proto =:= icmp6;
+    Proto =:= sctp;
+    Proto =:= sctp;
+    Proto =:= tcp;
+    Proto =:= udp ->
+    try_decode(Proto, Data, Packet).
+
+try_decode_next(Fun, Data, Packet) ->
+    Decode = try ?MODULE:Fun(Data) of
+        N ->
+            {ok, N}
+    catch
+        error:_ ->
+            {error, lists:reverse(Packet), {Fun, Data}}
+    end,
+
+    case Decode of
+        {ok, {Header, Payload}} ->
+            case next(Header) of
+                unsupported ->
+                    {error, lists:reverse([Header|Packet]), {unsupported, Payload}};
+                Type ->
+                    decode_next({Type, Payload}, [Header|Packet])
+            end;
+        {error, _, _} = Error ->
+            Error
+    end.
+
+try_decode(Fun, Data, Packet) ->
+    try ?MODULE:Fun(Data) of
+        {Header, Payload} ->
+            {ok, lists:reverse([Payload, Header|Packet])}
+    catch
+        error:_ ->
+            {error, lists:reverse(Packet), {Fun, Data}}
+    end.
+
+next(#null{family = Family}) -> family(Family);
+next(#linux_cooked{pro = Pro}) -> ether_type(Pro);
+next(#ether{type = Type}) -> ether_type(Type);
+next(#ipv4{p = P}) -> ipproto(P);
+next(#ipv6{next = Next}) -> ipproto(Next);
+next(#gre{type = Type}) -> ether_type(Type).
+
+%% BSD loopback
+null(N) ->
+    pkt_null:codec(N).
+
+%% Linux cooked capture ("-i any") - DLT_LINUX_SLL
+linux_cooked(N) ->
+    pkt_linux_cooked:codec(N).
+
+%% Ethernet
+ether(N) ->
+    pkt_ether:codec(N).
 
 ether_type(N) ->
     pkt_ether:type(N).
 
-family(?PF_INET) -> ipv4;
-family(?PF_INET6) -> ipv6;
-family(_) -> unsupported.
 
-proto(?IPPROTO_IP) -> ip;
-proto(?IPPROTO_ICMP) -> icmp;
-proto(?IPPROTO_ICMPV6) -> icmp6;
-proto(?IPPROTO_TCP) -> tcp;
-proto(?IPPROTO_UDP) -> udp;
-proto(?IPPROTO_IPV6) -> ipv6;
-proto(?IPPROTO_SCTP) -> sctp;
-proto(?IPPROTO_GRE) -> gre;
-proto(?IPPROTO_RAW) -> raw;
-proto(_) -> unsupported.
-
-
-%%
-%% BSD loopback
-%%
-null(N) ->
-    pkt_null:codec(N).
-
-%%
-%% Linux cooked capture ("-i any") - DLT_LINUX_SLL
-%%
-linux_cooked(N) ->
-    pkt_linux_cooked:codec(N).
-
-%%
-%% Ethernet
-%%
-ether(N) ->
-    pkt_ether:codec(N).
-
-%%
 %% ARP
-%%
 arp(N) ->
     pkt_arp:codec(N).
 
-%%
 %% IPv4
-%%
 ipv4(N) ->
     pkt_ipv4:codec(N).
 
 
-%%
 %% IPv6
-%%
 ipv6(N) ->
     pkt_ipv6:codec(N).
 
-%%
 %% GRE
-%%
 gre(N) ->
     pkt_gre:codec(N).
 
-%%
 %% TCP
-%%
 tcp(N) ->
     pkt_tcp:codec(N).
 
-%%
+tcp_options(N) ->
+    pkt_tcp:options(N).
+
 %% SCTP
-%%
 sctp(N) ->
     pkt_sctp:codec(N).
 
-%%
 %% UDP
-%%
 udp(N) ->
     pkt_udp:codec(N).
 
-%%
 %% ICMP
-%%
 icmp(N) ->
     pkt_icmp:codec(N).
 
-%%
 %% ICMPv6
-%%
 icmp6(N) ->
     pkt_icmp6:codec(N).
 
-%%
 %% Datalink types
-%%
+link_type(N) ->
+    dlt(N).
+
 dlt(N) ->
     pkt_dlt:codec(N).
+
+%% IP protocols
+proto(N) ->
+    ipproto(N).
+
+ipproto(N) ->
+    pkt_ipproto:codec(N).
+
+%% Protocol families
+family(?PF_INET) -> ipv4;
+family(?PF_INET6) -> ipv6;
+family(_) -> unsupported.
 
 %%
 %% Utility functions

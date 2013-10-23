@@ -23,7 +23,7 @@ tcp_checksum4() ->
              137,0>>,
 
     {IPv4, Payload0} = pkt:ipv4(Packet),
-    {TCP, Payload} = pkt:tcp(Payload0),
+    {#tcp{sum = Sum} = TCP, Payload} = pkt:tcp(Payload0),
 
     Sum = pkt:makesum([IPv4, TCP#tcp{sum = 0}, Payload]),
     ?_assertEqual(0, pkt:makesum([IPv4, TCP, Payload])).
