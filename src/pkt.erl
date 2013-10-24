@@ -132,7 +132,7 @@ decode_next({en10mb, Data}, Packet) ->
 decode_next({linux_sll, Data}, Packet) ->
     decode_next({linux_cooked, Data}, Packet);
 
-% Protocols pointing to next header
+% Header indicates next header
 decode_next({Proto, Data}, Packet) when
     Proto =:= ether;
     Proto =:= gre;
@@ -140,26 +140,12 @@ decode_next({Proto, Data}, Packet) when
     Proto =:= ipv6;
     Proto =:= linux_cooked;
     Proto =:= null ->
-    try_decode_next(Proto, Data, Packet);
-
-% Data follows header
-decode_next({Proto, Data}, Packet) when
-    Proto =:= arp;
-    Proto =:= icmp;
-    Proto =:= icmp6;
-    Proto =:= sctp;
-    Proto =:= sctp;
-    Proto =:= tcp;
-    Proto =:= udp ->
-    try_decode(Proto, Data, Packet).
-
-try_decode_next(Fun, Data, Packet) ->
-    Decode = try ?MODULE:Fun(Data) of
+    Decode = try ?MODULE:Proto(Data) of
         N ->
             {ok, N}
     catch
         error:_ ->
-            {error, lists:reverse(Packet), {Fun, Data}}
+            {error, lists:reverse(Packet), {Proto, Data}}
     end,
 
     case Decode of
@@ -172,15 +158,23 @@ try_decode_next(Fun, Data, Packet) ->
             end;
         {error, _, _} = Error ->
             Error
-    end.
+    end;
 
-try_decode(Fun, Data, Packet) ->
-    try ?MODULE:Fun(Data) of
+% Data follows header
+decode_next({Proto, Data}, Packet) when
+    Proto =:= arp;
+    Proto =:= icmp;
+    Proto =:= icmp6;
+    Proto =:= sctp;
+    Proto =:= sctp;
+    Proto =:= tcp;
+    Proto =:= udp ->
+    try ?MODULE:Proto(Data) of
         {Header, Payload} ->
             {ok, lists:reverse([Payload, Header|Packet])}
     catch
         error:_ ->
-            {error, lists:reverse(Packet), {Fun, Data}}
+            {error, lists:reverse(Packet), {Proto, Data}}
     end.
 
 next(#null{family = Family}) -> family(Family);
