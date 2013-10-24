@@ -148,11 +148,12 @@ decode_next({Proto, Data}, Packet) when
 
     case Decode of
         {ok, {Header, Payload}} ->
-            case next(Header) of
-                unsupported ->
-                    {error, lists:reverse([Header|Packet]), {unsupported, Payload}};
-                Type ->
-                    decode_next({Type, Payload}, [Header|Packet])
+            try next(Header) of
+                Next ->
+                    decode_next({Next, Payload}, [Header|Packet])
+            catch
+                error:_ ->
+                    {error, lists:reverse([Header|Packet]), {unsupported, Payload}}
             end;
         {error, _, _} = Error ->
             Error
@@ -254,8 +255,7 @@ ipproto(N) ->
 
 %% Protocol families
 family(?PF_INET) -> ipv4;
-family(?PF_INET6) -> ipv6;
-family(_) -> unsupported.
+family(?PF_INET6) -> ipv6.
 
 %%
 %% Utility functions

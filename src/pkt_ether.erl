@@ -39,8 +39,7 @@
 
 type(?ETH_P_IP) -> ipv4;
 type(?ETH_P_IPV6) -> ipv6;
-type(?ETH_P_ARP) -> arp;
-type(_) -> unsupported.
+type(?ETH_P_ARP) -> arp.
 
 codec(<<Dhost:6/bytes, Shost:6/bytes, Type:16, Payload/binary>>) ->
 %    Len = byte_size(Packet) - 4,

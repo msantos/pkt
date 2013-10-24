@@ -5,7 +5,9 @@
 
 pkt_test_() ->
     [
-        decapsulate(),
+        decapsulate_1(),
+        decapsulate_2(),
+        decapsulate_2_failure(),
         decode_1(),
         decode_2(),
         decode_2_failure(),
@@ -21,7 +23,7 @@ packet(tcp) ->
     <<0,80,217,184,222,13,22,43,241,75,9,12,176,18,17,4,140,86,
       0,0,2,4,5,172,1, 3,3,0,1,1,8,10,190,15,172,236,0,64,161,73,4,2,0,0>>.
 
-decapsulate() ->
+decapsulate_1() ->
     ?_assertEqual(
         [{ether,<<224,105,149,59,163,24>>,
                 <<0,22,182,181,62,198>>,
@@ -35,6 +37,30 @@ decapsulate() ->
               <<1,1,8,10,92,104,96,16,22,69,237,136>>},
          <<137,0>>],
         pkt:decapsulate(packet(ether))
+    ).
+
+decapsulate_2() ->
+    ?_assertEqual(
+        [{tcp,80,55736,3725399595,4048226572,11,0,0,0,1,0,0,1,0,
+              4356,35926,0,
+              <<2,4,5,172,1,3,3,0,1,1,8,10,190,15,172,236,0,64,161,73,
+                4,2,0,0>>},
+              <<>>],
+        pkt:decapsulate(tcp, packet(tcp))
+    ).
+
+decapsulate_2_failure() ->
+    ?_assertException(
+        error,
+        function_clause,
+        pkt:decapsulate(ipv6, packet(tcp))
+    ).
+
+decapsulate_2_unsupported() ->
+    ?_assertException(
+        error,
+        function_clause,
+        pkt:decapsulate(ether, packet(tcp))
     ).
 
 decode_1() ->
