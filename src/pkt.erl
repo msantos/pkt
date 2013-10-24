@@ -54,23 +54,32 @@
         dlt/1, link_type/1
 ]).
 
-decapsulate(DLT, Data) ->
-    decapsulate({DLT, Data}).
+% For integers, assume a whole frame and check the datalink type.
+%
+% Atoms can indicate any protocol type.
+decapsulate(Proto, Data) ->
+    decapsulate({Proto, Data}).
 
 decapsulate({DLT, Data}) when is_integer(DLT) ->
-    decapsulate_next({link_type(DLT), Data}, []);
-decapsulate({DLT, Data}) when is_atom(DLT) ->
-    decapsulate_next({DLT, Data}, []);
+    decapsulate_next({dlt(DLT), Data}, []);
+decapsulate({Proto, Data}) when is_atom(Proto) ->
+    decapsulate_next({Proto, Data}, []);
 decapsulate(Data) when is_binary(Data) ->
-    decapsulate_next({en10mb, Data}, []).
+    decapsulate_next({ether, Data}, []).
+
+% Aliases
+decapsulate_next({en10mb, Data}, Packet) ->
+    decapsulate_next({ether, Data}, Packet);
+decapsulate_next({linux_sll, Data}, Packet) ->
+    decapsulate_next({linux_cooked, Data}, Packet);
 
 decapsulate_next({null, Data}, Packet) ->
     {Hdr, Payload} = null(Data),
     decapsulate_next({next(Hdr), Payload}, [Hdr|Packet]);
-decapsulate_next({linux_sll, Data}, Packet) ->
+decapsulate_next({linux_cooked, Data}, Packet) ->
     {Hdr, Payload} = linux_cooked(Data),
     decapsulate_next({next(Hdr), Payload}, [Hdr|Packet]);
-decapsulate_next({en10mb, Data}, Packet) ->
+decapsulate_next({ether, Data}, Packet) ->
     {Hdr, Payload} = ether(Data),
     decapsulate_next({next(Hdr), Payload}, [Hdr|Packet]);
 
@@ -104,7 +113,7 @@ decapsulate_next({icmp6, Data}, Packet) ->
     lists:reverse([Payload, Hdr|Packet]).
 
 decode(Data) when is_binary(Data) ->
-    decode(en10mb, Data).
+    decode(ether, Data).
 
 decode(Proto, Data) when is_atom(Proto) ->
     try decode_next({Proto, Data}, []) of
