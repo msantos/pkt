@@ -32,15 +32,6 @@
 
 -include("pkt.hrl").
 
--define(ETHERHDRLEN, 16).
--define(IPV4HDRLEN, 20).
--define(IPV6HDRLEN, 40).
--define(TCPHDRLEN, 20).
--define(UDPHDRLEN, 8).
--define(ICMPHDRLEN, 8).
--define(ICMP6HDRLEN, 8).
--define(GREHDRLEN, 4).
-
 -export([
         checksum/1,
         decapsulate/1, decapsulate/2,
@@ -73,46 +64,44 @@ decapsulate({DLT, Data}) when is_atom(DLT) ->
 decapsulate(Data) when is_binary(Data) ->
     decapsulate_next({en10mb, Data}, []).
 
-decapsulate_next({null, Data}, Packet) when byte_size(Data) >= 16 ->
+decapsulate_next({null, Data}, Packet) ->
     {Hdr, Payload} = null(Data),
     decapsulate_next({next(Hdr), Payload}, [Hdr|Packet]);
-decapsulate_next({linux_sll, Data}, Packet) when byte_size(Data) >= 16 ->
+decapsulate_next({linux_sll, Data}, Packet) ->
     {Hdr, Payload} = linux_cooked(Data),
     decapsulate_next({next(Hdr), Payload}, [Hdr|Packet]);
-decapsulate_next({en10mb, Data}, Packet) when byte_size(Data) >= ?ETHERHDRLEN ->
+decapsulate_next({en10mb, Data}, Packet) ->
     {Hdr, Payload} = ether(Data),
     decapsulate_next({next(Hdr), Payload}, [Hdr|Packet]);
 
-decapsulate_next({ipv4, Data}, Packet) when byte_size(Data) >= ?IPV4HDRLEN ->
+decapsulate_next({ipv4, Data}, Packet) ->
     {Hdr, Payload} = ipv4(Data),
     decapsulate_next({next(Hdr), Payload}, [Hdr|Packet]);
-decapsulate_next({ipv6, Data}, Packet) when byte_size(Data) >= ?IPV6HDRLEN ->
+decapsulate_next({ipv6, Data}, Packet) ->
     {Hdr, Payload} = ipv6(Data),
     decapsulate_next({next(Hdr), Payload}, [Hdr|Packet]);
-decapsulate_next({gre, Data}, Packet) when byte_size(Data) >= ?GREHDRLEN ->
+decapsulate_next({gre, Data}, Packet) ->
     {Hdr, Payload} = gre(Data),
     decapsulate_next({next(Hdr), Payload}, [Hdr|Packet]);
 
-decapsulate_next({arp, Data}, Packet) when byte_size(Data) >= 28 ->
+decapsulate_next({arp, Data}, Packet) ->
     {Hdr, Payload} = arp(Data),
     lists:reverse([Payload, Hdr|Packet]);
-decapsulate_next({tcp, Data}, Packet) when byte_size(Data) >= ?TCPHDRLEN ->
+decapsulate_next({tcp, Data}, Packet) ->
     {Hdr, Payload} = tcp(Data),
     lists:reverse([Payload, Hdr|Packet]);
-decapsulate_next({udp, Data}, Packet) when byte_size(Data) >= ?UDPHDRLEN ->
+decapsulate_next({udp, Data}, Packet) ->
     {Hdr, Payload} = udp(Data),
     lists:reverse([Payload, Hdr|Packet]);
-decapsulate_next({sctp, Data}, Packet) when byte_size(Data) >= 12 ->
+decapsulate_next({sctp, Data}, Packet) ->
     {Hdr, Payload} = sctp(Data),
     lists:reverse([Payload, Hdr|Packet]);
-decapsulate_next({icmp, Data}, Packet) when byte_size(Data) >= ?ICMPHDRLEN ->
+decapsulate_next({icmp, Data}, Packet) ->
     {Hdr, Payload} = icmp(Data),
     lists:reverse([Payload, Hdr|Packet]);
-decapsulate_next({icmp6, Data}, Packet) when byte_size(Data) >= ?ICMP6HDRLEN ->
+decapsulate_next({icmp6, Data}, Packet) ->
     {Hdr, Payload} = icmp6(Data),
-    lists:reverse([Payload, Hdr|Packet]);
-decapsulate_next({_, Data}, Packet) ->
-    lists:reverse([{truncated, Data}|Packet]).
+    lists:reverse([Payload, Hdr|Packet]).
 
 decode(Data) when is_binary(Data) ->
     decode(en10mb, Data).
