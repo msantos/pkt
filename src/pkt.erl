@@ -73,6 +73,7 @@ decapsulate_next({en10mb, Data}, Packet) ->
 decapsulate_next({linux_sll, Data}, Packet) ->
     decapsulate_next({linux_cooked, Data}, Packet);
 
+% Protocol header indicates next header
 decapsulate_next({null, Data}, Packet) ->
     {Hdr, Payload} = null(Data),
     decapsulate_next({next(Hdr), Payload}, [Hdr|Packet]);
@@ -93,6 +94,7 @@ decapsulate_next({gre, Data}, Packet) ->
     {Hdr, Payload} = gre(Data),
     decapsulate_next({next(Hdr), Payload}, [Hdr|Packet]);
 
+% Data follows header
 decapsulate_next({arp, Data}, Packet) ->
     {Hdr, Payload} = arp(Data),
     lists:reverse([Payload, Hdr|Packet]);
@@ -130,7 +132,7 @@ decode_next({en10mb, Data}, Packet) ->
 decode_next({linux_sll, Data}, Packet) ->
     decode_next({linux_cooked, Data}, Packet);
 
-% Header indicates next header
+% Protocol header indicates next header
 decode_next({Proto, Data}, Packet) when
     Proto =:= ether;
     Proto =:= gre;
@@ -180,8 +182,9 @@ next(#null{family = Family}) -> family(Family);
 next(#linux_cooked{pro = Pro}) -> ether_type(Pro);
 next(#ether{type = Type}) -> ether_type(Type);
 next(#ipv4{p = P}) -> ipproto(P);
+next(#gre{type = Type}) -> ether_type(Type);
+
 next(#ipv6{next = Next}) -> ipproto(Next);
-next(#gre{type = Type}) -> ether_type(Type).
 
 %% BSD loopback
 null(N) ->
@@ -197,7 +200,6 @@ ether(N) ->
 
 ether_type(N) ->
     pkt_ether:type(N).
-
 
 %% ARP
 arp(N) ->
