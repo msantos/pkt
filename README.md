@@ -35,7 +35,8 @@ Originally part of epcap:
 
         Types   Data = binary()
                 Proto = FailedProto = atom()
-                Packet = [ Header | Payload ]
+                Packet = {Headers, Payload}
+                Headers = [Header]
                 Header = #ether{} | #arp{} | #null{} | #linux_cooked{} |
                     #ipv4{} | #ipv6{} | #tcp{} | #udp{} | #sctp{} | #icmp{} |
                     #icmp6{} | #gre{}

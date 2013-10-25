@@ -172,7 +172,7 @@ decode_next({Proto, Data}, Packet) when
     Proto =:= udp ->
     try ?MODULE:Proto(Data) of
         {Header, Payload} ->
-            {ok, lists:reverse([Payload, Header|Packet])}
+            {ok, {lists:reverse([Header|Packet]), Payload}}
     catch
         error:_ ->
             {error, lists:reverse(Packet), {Proto, Data}}
