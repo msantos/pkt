@@ -41,6 +41,7 @@
         ether_type/1,
         arp/1,
         null/1,
+        gre/1,
         linux_cooked/1,
         icmp/1,
         icmp6/1,
