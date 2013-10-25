@@ -8,6 +8,7 @@ pkt_test_() ->
         decapsulate_1(),
         decapsulate_2(),
         decapsulate_2_failure(),
+        decapsulate_2_unsupported(),
         decode_1(),
         decode_2(),
         decode_2_failure(),
