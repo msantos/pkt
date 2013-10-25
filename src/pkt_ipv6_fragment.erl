@@ -28,42 +28,32 @@
 %% LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 %% ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 %% POSSIBILITY OF SUCH DAMAGE.
--module(pkt_ipproto).
+-module(pkt_ipv6_fragment).
+
+%% RFC 2460
 
 -include("pkt_ipproto.hrl").
+-include("pkt_ipv6.hrl").
 
 -export([codec/1]).
 
-% IPPROTO_HOPOPTS and IPROTO_IP are both defined as 0
-%codec(?IPPROTO_IP) -> ip;
-codec(?IPPROTO_ICMP) -> icmp;
-codec(?IPPROTO_ICMPV6) -> icmp6;
-codec(?IPPROTO_TCP) -> tcp;
-codec(?IPPROTO_UDP) -> udp;
-codec(?IPPROTO_IPV6) -> ipv6;
-codec(?IPPROTO_SCTP) -> sctp;
-codec(?IPPROTO_GRE) -> gre;
-codec(?IPPROTO_RAW) -> raw;
-
-codec(?IPPROTO_HOPOPTS) -> ipv6_hopopts;
-codec(?IPPROTO_ROUTING) -> ipv6_routing;
-codec(?IPPROTO_FRAGMENT) -> ipv6_fragment;
-codec(?IPPROTO_NONE) -> ipv6_none;
-codec(?IPPROTO_DSTOPTS) -> ipv6_dstopts;
-codec(?IPPROTO_MH) -> ipv6_mh;
-
-codec(ip) -> ?IPPROTO_IP;
-codec(icmp) -> ?IPPROTO_ICMP;
-codec(icmp6) -> ?IPPROTO_ICMPV6;
-codec(tcp) -> ?IPPROTO_TCP;
-codec(udp) -> ?IPPROTO_UDP;
-codec(ipv6) -> ?IPPROTO_IPV6;
-codec(sctp) -> ?IPPROTO_SCTP;
-codec(gre) -> ?IPPROTO_GRE;
-
-codec(ipv6_hopopts) -> ?IPPROTO_HOPOPTS;
-codec(ipv6_routing) -> ?IPPROTO_ROUTING;
-codec(ipv6_fragment) -> ?IPPROTO_FRAGMENT;
-codec(ipv6_none) -> ?IPPROTO_NONE;
-codec(ipv6_dstopts) -> ?IPPROTO_DSTOPTS ;
-codec(ipv6_mh) -> ?IPPROTO_MH.
+codec(
+    <<Next:8, Res:8, Off:13, Res2:2, M:1, Id:32, Payload/binary>>
+) ->
+    {#ipv6_fragment{
+            next = Next,
+            res = Res,
+            off = Off,
+            res2 = Res2,
+            m = M,
+            id = Id
+            }, Payload};
+codec(#ipv6_fragment{
+            next = Next,
+            res = Res,
+            off = Off,
+            res2 = Res2,
+            m = M,
+            id = Id
+        }) ->
+    <<Next:8, Res:8, Off:13, Res2:2, M:1, Id:32>>.

@@ -46,6 +46,12 @@
         icmp6/1,
         ipv4/1,
         ipv6/1,
+        ipv6_ah/1,
+        ipv6_dstopts/1,
+        ipv6_esp/1,
+        ipv6_fragment/1,
+        ipv6_hopopts/1,
+        ipv6_routing/1,
         ipproto/1, proto/1,
         tcp/1,
         tcp_options/1,
@@ -90,11 +96,31 @@ decapsulate_next({ipv4, Data}, Packet) ->
 decapsulate_next({ipv6, Data}, Packet) ->
     {Hdr, Payload} = ipv6(Data),
     decapsulate_next({next(Hdr), Payload}, [Hdr|Packet]);
+
+decapsulate_next({ipv6_ah, Data}, Packet) ->
+    {Hdr, Payload} = ipv6_ah(Data),
+    decapsulate_next({next(Hdr), Payload}, [Hdr|Packet]);
+decapsulate_next({ipv6_dstopts, Data}, Packet) ->
+    {Hdr, Payload} = ipv6_dstopts(Data),
+    decapsulate_next({next(Hdr), Payload}, [Hdr|Packet]);
+decapsulate_next({ipv6_esp, Data}, Packet) ->
+    {Hdr, Payload} = ipv6_esp(Data),
+    decapsulate_next({next(Hdr), Payload}, [Hdr|Packet]);
+decapsulate_next({ipv6_fragment, Data}, Packet) ->
+    {Hdr, Payload} = ipv6_fragment(Data),
+    decapsulate_next({next(Hdr), Payload}, [Hdr|Packet]);
+decapsulate_next({ipv6_hopopts, Data}, Packet) ->
+    {Hdr, Payload} = ipv6_hopopts(Data),
+    decapsulate_next({next(Hdr), Payload}, [Hdr|Packet]);
+decapsulate_next({ipv6_routing, Data}, Packet) ->
+    {Hdr, Payload} = ipv6_routing(Data),
+    decapsulate_next({next(Hdr), Payload}, [Hdr|Packet]);
+
 decapsulate_next({gre, Data}, Packet) ->
     {Hdr, Payload} = gre(Data),
     decapsulate_next({next(Hdr), Payload}, [Hdr|Packet]);
 
-% Data follows header
+% Upper layer: data follows header
 decapsulate_next({arp, Data}, Packet) ->
     {Hdr, Payload} = arp(Data),
     lists:reverse([Payload, Hdr|Packet]);
@@ -112,7 +138,10 @@ decapsulate_next({icmp, Data}, Packet) ->
     lists:reverse([Payload, Hdr|Packet]);
 decapsulate_next({icmp6, Data}, Packet) ->
     {Hdr, Payload} = icmp6(Data),
-    lists:reverse([Payload, Hdr|Packet]).
+    lists:reverse([Payload, Hdr|Packet]);
+% IPv6 NONE pseudo-header
+decapsulate_next({ipv6_none, Data}, Packet) ->
+    lists:reverse([Data|Packet]).
 
 decode(Data) when is_binary(Data) ->
     decode(ether, Data).
@@ -139,7 +168,15 @@ decode_next({Proto, Data}, Packet) when
     Proto =:= ipv4;
     Proto =:= ipv6;
     Proto =:= linux_cooked;
-    Proto =:= null ->
+    Proto =:= null;
+
+    Proto =:= ipv6_ah;
+    Proto =:= ipv6_dstopts;
+    Proto =:= ipv6_esp;
+    Proto =:= ipv6_fragment;
+    Proto =:= ipv6_hopopts;
+    Proto =:= ipv6_routing ->
+
     Decode = try ?MODULE:Proto(Data) of
         N ->
             {ok, N}
@@ -161,7 +198,12 @@ decode_next({Proto, Data}, Packet) when
             Error
     end;
 
-% Data follows header
+% Upper layer: data follows header
+
+% IPv6 NONE pseudo-header
+decode_next({ipv6_none, Data}, Packet) ->
+    {ok, {lists:reverse(Packet), Data}};
+
 decode_next({Proto, Data}, Packet) when
     Proto =:= arp;
     Proto =:= icmp;
@@ -183,8 +225,13 @@ next(#linux_cooked{pro = Pro}) -> ether_type(Pro);
 next(#ether{type = Type}) -> ether_type(Type);
 next(#ipv4{p = P}) -> ipproto(P);
 next(#gre{type = Type}) -> ether_type(Type);
-
 next(#ipv6{next = Next}) -> ipproto(Next);
+next(#ipv6_ah{next = Next}) -> ipproto(Next);
+next(#ipv6_dstopts{next = Next}) -> ipproto(Next);
+next(#ipv6_esp{next = Next}) -> ipproto(Next);
+next(#ipv6_fragment{next = Next}) -> ipproto(Next);
+next(#ipv6_hopopts{next = Next}) -> ipproto(Next);
+next(#ipv6_routing{next = Next}) -> ipproto(Next).
 
 %% BSD loopback
 null(N) ->
@@ -213,6 +260,19 @@ ipv4(N) ->
 %% IPv6
 ipv6(N) ->
     pkt_ipv6:codec(N).
+
+ipv6_ah(N) ->
+    pkt_ipv6_ah:codec(N).
+ipv6_dstopts(N) ->
+    pkt_ipv6_dstopts:codec(N).
+ipv6_esp(N) ->
+    pkt_ipv6_esp:codec(N).
+ipv6_fragment(N) ->
+    pkt_ipv6_fragment:codec(N).
+ipv6_hopopts(N) ->
+    pkt_ipv6_hopopts:codec(N).
+ipv6_routing(N) ->
+    pkt_ipv6_routing:codec(N).
 
 %% GRE
 gre(N) ->
