@@ -17,6 +17,17 @@
 -define(ICMP6_PARAMPROB_OPTION, 2).         % unrecognized IPv6 option
 -define(ICMP6_ROUTER_RENUMBERING, 138).
 
+-define(MLD_LISTENER_QUERY, 130).
+-define(MLD_LISTENER_REPORT, 131).
+-define(MLD_LISTENER_REPORTV2, 143).
+-define(MLD_LISTENER_REDUCTION, 132).
+
+-define(ND_ROUTER_SOLICIT, 133).
+-define(ND_ROUTER_ADVERT, 134).
+-define(ND_NEIGHBOR_SOLICIT, 135).
+-define(ND_NEIGHBOR_ADVERT, 136).
+-define(ND_REDIRECT, 137).
+
 -record(icmp6, {
         type = ?ICMP6_ECHO_REQUEST, code = 0, checksum = 0,
 
@@ -25,5 +36,20 @@
         mtu = 0,
         id = 0,
         seq = 0,
-        maxdelay = 0
+        maxdelay = 0,
+
+        res = 0, res2 = 0,
+
+        saddr,
+        daddr,
+
+        % router advertisement
+        hop = 0, m = 0, o = 0, lifetime = 0, reach = 0, retrans = 0,
+
+        % Neighbor Advertisement Message
+        r = 0, s = 0,
+
+        % Multicast Listener Discovery (MLD)
+        % use daddr for the multicast address
+        delay = 0
     }).

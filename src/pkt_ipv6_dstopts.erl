@@ -40,8 +40,10 @@
 codec(
     <<Next:8, Len:8, Rest/binary>>
 ) ->
-    OptLen = (Len - 1) * 8,
-    <<Opt:OptLen/binary, Payload/binary>> = Rest,
+    % Length of the Destination Options header in 8-octet units, not
+    % including the first 8 octets
+    OptLen = 6 + (Len * 8),
+    <<Opt:OptLen/bytes, Payload/binary>> = Rest,
     {#ipv6_dstopts{
             next = Next,
             len = Len,

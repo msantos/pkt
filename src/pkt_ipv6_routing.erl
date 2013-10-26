@@ -40,8 +40,10 @@
 codec(
     <<Next:8, Len:8, Type:8, Left:8, Rest/binary>>
 ) ->
-    DataLen = (Len - 3) * 8,
-    <<Data:DataLen/binary, Payload/binary>> = Rest,
+    % Length of the Routing header in 8-octet units, not including the
+    % first 8 octets.
+    DataLen = 4 + (Len * 8),
+    <<Data:DataLen/bytes, Payload/binary>> = Rest,
     {#ipv6_routing{
             next = Next,
             len = Len,

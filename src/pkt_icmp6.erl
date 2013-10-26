@@ -34,7 +34,9 @@
 
 -export([codec/1]).
 
-% ICMPv6 Error Messages
+%%
+%% ICMPv6 Error Messages
+%%
 
 % Destination Unreachable Message
 codec(<<?ICMP6_DST_UNREACH:8, Code:8, Checksum:16, Unused:32/bits, Payload/binary>>) ->
@@ -76,7 +78,9 @@ codec(#icmp6{
     }) ->
     <<?ICMP6_PARAM_PROB:8, Code:8, Checksum:16, Ptr:32>>;
 
-% ICMPv6 Informational Messages
+%%
+%% ICMPv6 Informational Messages
+%%
 
 % Echo Request Message/Echo Reply Message
 codec(<<Type:8, Code:8, Checksum:16, Id:16, Seq:16, Payload/binary>>)
@@ -89,4 +93,136 @@ codec(#icmp6{
         type = Type, code = Code, checksum = Checksum,
         id = Id, seq = Seq
     }) when Type =:= ?ICMP6_ECHO_REQUEST; Type =:= ?ICMP6_ECHO_REPLY ->
-    <<Type:8, Code:8, Checksum:16, Id:16, Seq:16>>.
+    <<Type:8, Code:8, Checksum:16, Id:16, Seq:16>>;
+
+%%
+%% RFC 4681: Neighbor Discovery for IP version 6 (IPv6)
+%%
+
+% Router Solicitation Message
+codec(<<?ND_ROUTER_SOLICIT:8, Code:8, Checksum:16, Res:32, Payload/binary>>) ->
+    {#icmp6{
+        type = ?ND_ROUTER_SOLICIT, code = Code, checksum = Checksum,
+        res = Res
+    }, Payload};
+codec(#icmp6{
+        type = ?ND_ROUTER_SOLICIT, code = Code, checksum = Checksum,
+        res = Res
+    }) ->
+    <<?ND_ROUTER_SOLICIT:8, Code:8, Checksum:16, Res:16>>;
+
+% Router Advertisement Message
+codec(<<?ND_ROUTER_ADVERT:8, Code:8, Checksum:16, Hop:8, M:1, O:1, Res:6,
+        Lifetime:16, Reach:32, Retrans:32, Payload/binary>>) ->
+    {#icmp6{
+        type = ?ND_ROUTER_ADVERT, code = Code, checksum = Checksum,
+        hop = Hop, m = M, o = O, res =Res, lifetime = Lifetime,
+        reach = Reach, retrans = Retrans
+    }, Payload};
+codec(#icmp6{
+        type = ?ND_ROUTER_ADVERT, code = Code, checksum = Checksum,
+        hop = Hop, m = M, o = O, res =Res, lifetime = Lifetime,
+        reach = Reach, retrans = Retrans
+    }) ->
+    <<?ND_ROUTER_ADVERT:8, Code:8, Checksum:16, Hop:8, M:1, O:1, Res:6,
+        Lifetime:16, Reach:32, Retrans:32>>;
+
+% Neighbor Solicitation Message Format
+codec(<<?ND_NEIGHBOR_SOLICIT:8, Code:8, Checksum:16, Res:32,
+        SA1:16, SA2:16, SA3:16, SA4:16, SA5:16, SA6:16, SA7:16, SA8:16,
+        Payload/binary>>) ->
+    {#icmp6{
+        type = ?ND_NEIGHBOR_SOLICIT, code = Code, checksum = Checksum,
+        res = Res,
+        saddr = {SA1,SA2,SA3,SA4,SA5,SA6,SA7,SA8}
+    }, Payload};
+codec(#icmp6{
+        type = ?ND_NEIGHBOR_SOLICIT, code = Code, checksum = Checksum,
+        res = Res,
+        saddr = {SA1,SA2,SA3,SA4,SA5,SA6,SA7,SA8}
+    }) ->
+    <<?ND_NEIGHBOR_SOLICIT:8, Code:8, Checksum:16, Res:32,
+      SA1:16, SA2:16, SA3:16, SA4:16, SA5:16, SA6:16, SA7:16, SA8:16>>;
+
+% Neighbor Advertisement Message
+codec(<<?ND_NEIGHBOR_ADVERT:8, Code:8, Checksum:16,
+        R:1, S:1, O:1, Res:29,
+        SA1:16, SA2:16, SA3:16, SA4:16, SA5:16, SA6:16, SA7:16, SA8:16,
+        Payload/binary>>) ->
+    {#icmp6{
+        type = ?ND_NEIGHBOR_ADVERT, code = Code, checksum = Checksum,
+        r = R, s = S, o = O, res = Res,
+        saddr = {SA1,SA2,SA3,SA4,SA5,SA6,SA7,SA8}
+    }, Payload};
+codec(#icmp6{
+        type = ?ND_NEIGHBOR_ADVERT, code = Code, checksum = Checksum,
+        r = R, s = S, o = O, res = Res,
+        saddr = {SA1,SA2,SA3,SA4,SA5,SA6,SA7,SA8}
+    }) ->
+    <<?ND_NEIGHBOR_ADVERT:8, Code:8, Checksum:16,
+      R:1, S:1, O:1, Res:29,
+      SA1:16, SA2:16, SA3:16, SA4:16, SA5:16, SA6:16, SA7:16, SA8:16>>;
+
+% Redirect Message
+codec(<<?ND_REDIRECT:8, Code:8, Checksum:16,
+        Res:32,
+        SA1:16, SA2:16, SA3:16, SA4:16, SA5:16, SA6:16, SA7:16, SA8:16,
+        DA1:16, DA2:16, DA3:16, DA4:16, DA5:16, DA6:16, DA7:16, DA8:16,
+        Payload/binary>>) ->
+    {#icmp6{
+        type = ?ND_REDIRECT, code = Code, checksum = Checksum,
+        res = Res,
+        saddr = {SA1,SA2,SA3,SA4,SA5,SA6,SA7,SA8},
+        daddr = {DA1,DA2,DA3,DA4,DA5,DA6,DA7,DA8}
+    }, Payload};
+codec(#icmp6{
+        type = ?ND_REDIRECT, code = Code, checksum = Checksum,
+        res = Res,
+        saddr = {SA1,SA2,SA3,SA4,SA5,SA6,SA7,SA8},
+        daddr = {DA1,DA2,DA3,DA4,DA5,DA6,DA7,DA8}
+    }) ->
+    <<?ND_REDIRECT:8, Code:8, Checksum:16,
+       Res:32,
+       SA1:16, SA2:16, SA3:16, SA4:16, SA5:16, SA6:16, SA7:16, SA8:16,
+       DA1:16, DA2:16, DA3:16, DA4:16, DA5:16, DA6:16, DA7:16, DA8:16>>;
+
+%%
+%% RFC 2710: Multicast Listener Discovery (MLD) for IPv6
+%% RFC 4604: Multicast Listener Discovery Version 2 (MLDv2) for IPv6
+%%
+codec(<<Type:8, Code:8, Checksum:16,
+        Delay:16, Res:16,
+        DA1:16, DA2:16, DA3:16, DA4:16, DA5:16, DA6:16, DA7:16, DA8:16,
+        Payload/binary>>) when
+        Type =:= ?MLD_LISTENER_QUERY;
+        Type =:= ?MLD_LISTENER_REPORT;
+        Type =:= ?MLD_LISTENER_REDUCTION ->
+    {#icmp6{
+        type = Type, code = Code, checksum = Checksum,
+        delay = Delay, res = Res,
+        daddr = {DA1,DA2,DA3,DA4,DA5,DA6,DA7,DA8}
+    }, Payload};
+codec(#icmp6{
+        type = Type, code = Code, checksum = Checksum,
+        delay = Delay, res = Res,
+        daddr = {DA1,DA2,DA3,DA4,DA5,DA6,DA7,DA8}
+    }) when
+        Type =:= ?MLD_LISTENER_QUERY;
+        Type =:= ?MLD_LISTENER_REPORT;
+        Type =:= ?MLD_LISTENER_REDUCTION ->
+    <<Type:8, Code:8, Checksum:16,
+       Delay:16, Res:16,
+       DA1:16, DA2:16, DA3:16, DA4:16, DA5:16, DA6:16, DA7:16, DA8:16>>;
+
+codec(<<?MLD_LISTENER_REPORTV2:8, Res:8, Checksum:16,
+        Res2:16, M:16, Payload/binary>>) ->
+    {#icmp6{
+        type = ?MLD_LISTENER_REPORTV2, res = Res, checksum = Checksum,
+        res2 = Res2, m = M
+    }, Payload};
+codec(#icmp6{
+        type = ?MLD_LISTENER_REPORTV2, res = Res, checksum = Checksum,
+        res2 = Res2, m = M
+    }) ->
+    <<?MLD_LISTENER_REPORTV2:8, Res:8, Checksum:16,
+        Res2:16, M:16>>.

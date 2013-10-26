@@ -40,8 +40,14 @@
 codec(
     <<Next:8, Len:8, Res:16, SPI:32, Seq:32, Rest/binary>>
 ) ->
-    ICVLen = (Len - 11) * 8,
-    <<ICV:ICVLen/binary, Payload/binary>> = Rest,
+    % the length of AH in 32-bit words (4-byte units), minus "2"
+    %  Next + Len + Res = 32 bits
+    %  SPI = 32 bits
+    % The length is the 32-bit sequence number + the ICV
+    %
+    % XXX for IPv6, must be a multiple of 8-octets
+    ICVLen = ((Len - 1) * 4),
+    <<ICV:ICVLen/bytes, Payload/binary>> = Rest,
     {#ipv6_ah{
         next = Next,
         len = Len,

@@ -123,11 +123,23 @@ Sum = pkt:makesum([IPv4, TCP#tcp{sum = 0}, Payload]),
 
 ## TODO
 
+* IPv6 AH and ESP
+    * handle alignment differences between IPv4 and IPv6 (IPv4 uses 32
+      bits, IPv6 uses 64 bits)
+
+* ICMPv6
+    * fix handling of neighbour discovery
+    * simplify ICMPv6 header record and add a record for ICMPv6 type or
+      add functions for ICMPv6 variable length payloads
+
+* merge in DLT\_IEEE802\_11 support from wierl
+
+* merge in ICMPv6 code from gen_icmp
+
 * DLTs
     * DLT_SLIP
     * DLT_PPP
     * DLT_RAW
     * DLT\_PPP\_SERIAL
     * DLT\_PPP\_ETHER
-    * DLT\_IEEE802\_11
     * DLT_LOOP
