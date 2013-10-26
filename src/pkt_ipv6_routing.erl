@@ -40,7 +40,7 @@
 codec(
     <<Next:8, Len:8, Type:8, Left:8, Rest/binary>>
 ) ->
-    DataLen = (Len - 1) * 8,
+    DataLen = (Len - 3) * 8,
     <<Data:DataLen/binary, Payload/binary>> = Rest,
     {#ipv6_routing{
             next = Next,

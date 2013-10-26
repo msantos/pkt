@@ -40,7 +40,7 @@
 codec(
     <<Next:8, Len:8, Res:16, SPI:32, Seq:32, Rest/binary>>
 ) ->
-    ICVLen = (Len - 1) * 8,
+    ICVLen = (Len - 11) * 8,
     <<ICV:ICVLen/binary, Payload/binary>> = Rest,
     {#ipv6_ah{
         next = Next,

@@ -7,7 +7,8 @@ codec_test_() ->
     [
         decode(),
         encode(),
-        type()
+        type(),
+        type_fail()
     ].
 
 packet() ->
@@ -32,3 +33,10 @@ encode() ->
 
 type() ->
     ?_assertEqual(ipv4, pkt_ether:type(?ETH_P_IP)).
+
+type_fail() ->
+    ?_assertException(
+        error,
+        function_clause,
+        pkt_ether:type(31337)
+    ).
