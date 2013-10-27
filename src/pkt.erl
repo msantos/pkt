@@ -75,74 +75,74 @@ decapsulate(Data) when is_binary(Data) ->
     decapsulate_next({ether, Data}, []).
 
 % Aliases
-decapsulate_next({en10mb, Data}, Packet) ->
-    decapsulate_next({ether, Data}, Packet);
-decapsulate_next({linux_sll, Data}, Packet) ->
-    decapsulate_next({linux_cooked, Data}, Packet);
+decapsulate_next({en10mb, Data}, Headers) ->
+    decapsulate_next({ether, Data}, Headers);
+decapsulate_next({linux_sll, Data}, Headers) ->
+    decapsulate_next({linux_cooked, Data}, Headers);
 
 % Protocol header indicates next header
-decapsulate_next({null, Data}, Packet) ->
-    {Hdr, Payload} = null(Data),
-    decapsulate_next({next(Hdr), Payload}, [Hdr|Packet]);
-decapsulate_next({linux_cooked, Data}, Packet) ->
-    {Hdr, Payload} = linux_cooked(Data),
-    decapsulate_next({next(Hdr), Payload}, [Hdr|Packet]);
-decapsulate_next({ether, Data}, Packet) ->
-    {Hdr, Payload} = ether(Data),
-    decapsulate_next({next(Hdr), Payload}, [Hdr|Packet]);
+decapsulate_next({null, Data}, Headers) ->
+    {Header, Payload} = null(Data),
+    decapsulate_next({next(Header), Payload}, [Header|Headers]);
+decapsulate_next({linux_cooked, Data}, Headers) ->
+    {Header, Payload} = linux_cooked(Data),
+    decapsulate_next({next(Header), Payload}, [Header|Headers]);
+decapsulate_next({ether, Data}, Headers) ->
+    {Header, Payload} = ether(Data),
+    decapsulate_next({next(Header), Payload}, [Header|Headers]);
 
-decapsulate_next({ipv4, Data}, Packet) ->
-    {Hdr, Payload} = ipv4(Data),
-    decapsulate_next({next(Hdr), Payload}, [Hdr|Packet]);
-decapsulate_next({ipv6, Data}, Packet) ->
-    {Hdr, Payload} = ipv6(Data),
-    decapsulate_next({next(Hdr), Payload}, [Hdr|Packet]);
+decapsulate_next({ipv4, Data}, Headers) ->
+    {Header, Payload} = ipv4(Data),
+    decapsulate_next({next(Header), Payload}, [Header|Headers]);
+decapsulate_next({ipv6, Data}, Headers) ->
+    {Header, Payload} = ipv6(Data),
+    decapsulate_next({next(Header), Payload}, [Header|Headers]);
 
-decapsulate_next({ipv6_ah, Data}, Packet) ->
-    {Hdr, Payload} = ipv6_ah(Data),
-    decapsulate_next({next(Hdr), Payload}, [Hdr|Packet]);
-decapsulate_next({ipv6_dstopts, Data}, Packet) ->
-    {Hdr, Payload} = ipv6_dstopts(Data),
-    decapsulate_next({next(Hdr), Payload}, [Hdr|Packet]);
-decapsulate_next({ipv6_esp, Data}, Packet) ->
-    {Hdr, Payload} = ipv6_esp(Data),
-    decapsulate_next({next(Hdr), Payload}, [Hdr|Packet]);
-decapsulate_next({ipv6_fragment, Data}, Packet) ->
-    {Hdr, Payload} = ipv6_fragment(Data),
-    decapsulate_next({next(Hdr), Payload}, [Hdr|Packet]);
-decapsulate_next({ipv6_hopopts, Data}, Packet) ->
-    {Hdr, Payload} = ipv6_hopopts(Data),
-    decapsulate_next({next(Hdr), Payload}, [Hdr|Packet]);
-decapsulate_next({ipv6_routing, Data}, Packet) ->
-    {Hdr, Payload} = ipv6_routing(Data),
-    decapsulate_next({next(Hdr), Payload}, [Hdr|Packet]);
+decapsulate_next({ipv6_ah, Data}, Headers) ->
+    {Header, Payload} = ipv6_ah(Data),
+    decapsulate_next({next(Header), Payload}, [Header|Headers]);
+decapsulate_next({ipv6_dstopts, Data}, Headers) ->
+    {Header, Payload} = ipv6_dstopts(Data),
+    decapsulate_next({next(Header), Payload}, [Header|Headers]);
+decapsulate_next({ipv6_esp, Data}, Headers) ->
+    {Header, Payload} = ipv6_esp(Data),
+    decapsulate_next({next(Header), Payload}, [Header|Headers]);
+decapsulate_next({ipv6_fragment, Data}, Headers) ->
+    {Header, Payload} = ipv6_fragment(Data),
+    decapsulate_next({next(Header), Payload}, [Header|Headers]);
+decapsulate_next({ipv6_hopopts, Data}, Headers) ->
+    {Header, Payload} = ipv6_hopopts(Data),
+    decapsulate_next({next(Header), Payload}, [Header|Headers]);
+decapsulate_next({ipv6_routing, Data}, Headers) ->
+    {Header, Payload} = ipv6_routing(Data),
+    decapsulate_next({next(Header), Payload}, [Header|Headers]);
 
-decapsulate_next({gre, Data}, Packet) ->
-    {Hdr, Payload} = gre(Data),
-    decapsulate_next({next(Hdr), Payload}, [Hdr|Packet]);
+decapsulate_next({gre, Data}, Headers) ->
+    {Header, Payload} = gre(Data),
+    decapsulate_next({next(Header), Payload}, [Header|Headers]);
 
 % Upper layer: data follows header
-decapsulate_next({arp, Data}, Packet) ->
-    {Hdr, Payload} = arp(Data),
-    lists:reverse([Payload, Hdr|Packet]);
-decapsulate_next({tcp, Data}, Packet) ->
-    {Hdr, Payload} = tcp(Data),
-    lists:reverse([Payload, Hdr|Packet]);
-decapsulate_next({udp, Data}, Packet) ->
-    {Hdr, Payload} = udp(Data),
-    lists:reverse([Payload, Hdr|Packet]);
-decapsulate_next({sctp, Data}, Packet) ->
-    {Hdr, Payload} = sctp(Data),
-    lists:reverse([Payload, Hdr|Packet]);
-decapsulate_next({icmp, Data}, Packet) ->
-    {Hdr, Payload} = icmp(Data),
-    lists:reverse([Payload, Hdr|Packet]);
-decapsulate_next({icmp6, Data}, Packet) ->
-    {Hdr, Payload} = icmp6(Data),
-    lists:reverse([Payload, Hdr|Packet]);
+decapsulate_next({arp, Data}, Headers) ->
+    {Header, Payload} = arp(Data),
+    lists:reverse([Payload, Header|Headers]);
+decapsulate_next({tcp, Data}, Headers) ->
+    {Header, Payload} = tcp(Data),
+    lists:reverse([Payload, Header|Headers]);
+decapsulate_next({udp, Data}, Headers) ->
+    {Header, Payload} = udp(Data),
+    lists:reverse([Payload, Header|Headers]);
+decapsulate_next({sctp, Data}, Headers) ->
+    {Header, Payload} = sctp(Data),
+    lists:reverse([Payload, Header|Headers]);
+decapsulate_next({icmp, Data}, Headers) ->
+    {Header, Payload} = icmp(Data),
+    lists:reverse([Payload, Header|Headers]);
+decapsulate_next({icmp6, Data}, Headers) ->
+    {Header, Payload} = icmp6(Data),
+    lists:reverse([Payload, Header|Headers]);
 % IPv6 NONE pseudo-header
-decapsulate_next({ipv6_none, Data}, Packet) ->
-    lists:reverse([Data|Packet]).
+decapsulate_next({ipv6_none, Data}, Headers) ->
+    lists:reverse([Data|Headers]).
 
 decode(Data) when is_binary(Data) ->
     decode(ether, Data).
@@ -157,13 +157,13 @@ decode(Proto, Data) when is_atom(Proto) ->
     end.
 
 % Aliases
-decode_next({en10mb, Data}, Packet) ->
-    decode_next({ether, Data}, Packet);
-decode_next({linux_sll, Data}, Packet) ->
-    decode_next({linux_cooked, Data}, Packet);
+decode_next({en10mb, Data}, Headers) ->
+    decode_next({ether, Data}, Headers);
+decode_next({linux_sll, Data}, Headers) ->
+    decode_next({linux_cooked, Data}, Headers);
 
 % Protocol header indicates next header
-decode_next({Proto, Data}, Packet) when
+decode_next({Proto, Data}, Headers) when
     Proto =:= ether;
     Proto =:= gre;
     Proto =:= ipv4;
@@ -183,17 +183,17 @@ decode_next({Proto, Data}, Packet) when
             {ok, N}
     catch
         error:_ ->
-            {error, lists:reverse(Packet), {Proto, Data}}
+            {error, lists:reverse(Headers), {Proto, Data}}
     end,
 
     case Decode of
         {ok, {Header, Payload}} ->
             try next(Header) of
                 Next ->
-                    decode_next({Next, Payload}, [Header|Packet])
+                    decode_next({Next, Payload}, [Header|Headers])
             catch
                 error:_ ->
-                    {error, lists:reverse([Header|Packet]), {unsupported, Payload}}
+                    {error, lists:reverse([Header|Headers]), {unsupported, Payload}}
             end;
         {error, _, _} = Error ->
             Error
@@ -202,10 +202,10 @@ decode_next({Proto, Data}, Packet) when
 % Upper layer: data follows header
 
 % IPv6 NONE pseudo-header
-decode_next({ipv6_none, Data}, Packet) ->
-    {ok, {lists:reverse(Packet), Data}};
+decode_next({ipv6_none, Data}, Headers) ->
+    {ok, {lists:reverse(Headers), Data}};
 
-decode_next({Proto, Data}, Packet) when
+decode_next({Proto, Data}, Headers) when
     Proto =:= arp;
     Proto =:= icmp;
     Proto =:= icmp6;
@@ -215,10 +215,10 @@ decode_next({Proto, Data}, Packet) when
     Proto =:= udp ->
     try ?MODULE:Proto(Data) of
         {Header, Payload} ->
-            {ok, {lists:reverse([Header|Packet]), Payload}}
+            {ok, {lists:reverse([Header|Headers]), Payload}}
     catch
         error:_ ->
-            {error, lists:reverse(Packet), {Proto, Data}}
+            {error, lists:reverse(Headers), {Proto, Data}}
     end.
 
 next(#null{family = Family}) -> family(Family);

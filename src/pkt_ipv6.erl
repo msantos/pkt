@@ -30,6 +30,8 @@
 %% POSSIBILITY OF SUCH DAMAGE.
 -module(pkt_ipv6).
 
+%% RFC 2460: Internet Protocol, Version 6 (IPv6) Specification
+
 -include("pkt_ipproto.hrl").
 -include("pkt_ipv6.hrl").
 

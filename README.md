@@ -123,6 +123,8 @@ Sum = pkt:makesum([IPv4, TCP#tcp{sum = 0}, Payload]),
 
 ## TODO
 
+* support RFC 2675 (IPv6 Jumbograms)
+
 * IPv6 AH and ESP
     * handle alignment differences between IPv4 and IPv6 (IPv4 uses 32
       bits, IPv6 uses 64 bits)
