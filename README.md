@@ -121,6 +121,20 @@ Sum = pkt:makesum([IPv4, TCP#tcp{sum = 0}, Payload]),
 0 = pkt:makesum([IPv4, TCP, Payload]).
 ```
 
+## PADDING OF ETHERNET FRAMES
+
+The minimum size of an ethernet payload is 46 bytes. An ethernet frame
+containing a TCP/IP packet composed of a 20 byte IPv4 header and 20 byte
+TCP header and payload will be padded by 6 bytes. To calculate the actual
+length of the packet, use the length and header length values in the IPv4
+header and the offset value in the TCP header:
+
+```erlang
+[#ether{}, #ipv4{len = Len, hl = HL}, #tcp{off = Off}, Payload] = pkt:decapsulate(Frame),
+    Size = Len - (HL * 4) - (Off * 4),
+    <<Payload:Size/bytes>>.
+```
+
 ## TODO
 
 * support RFC 2675 (IPv6 Jumbograms)
