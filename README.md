@@ -15,7 +15,7 @@ Originally part of epcap:
                 Packet = [ Header | Payload ]
                 Header = #ether{} | #arp{} | #null{} | #linux_cooked{} |
                     #ipv4{} | #ipv6{} | #tcp{} | #udp{} | #sctp{} | #icmp{} |
-                    #icmp6{} | #gre{}
+                    #icmp6{} | #igmp{} | #gre{}
                 Payload = binary()
 
         Convert network protocols from binary data to a list of Erlang
@@ -39,7 +39,7 @@ Originally part of epcap:
                 Headers = [Header]
                 Header = #ether{} | #arp{} | #null{} | #linux_cooked{} |
                     #ipv4{} | #ipv6{} | #tcp{} | #udp{} | #sctp{} | #icmp{} |
-                    #icmp6{} | #gre{}
+                    #icmp6{} | #igmp{} | #gre{}
                 SoFar = Headers | []
                 Payload = binary()
 
@@ -62,11 +62,12 @@ types.
     udp(Packet) -> {#udp{}, Payload} | binary()
     icmp(Packet) -> {#icmp{}, Payload} | binary()
     icmp6(Packet) -> {#icmp6{}, Payload} | binary()
+    igmp(Packet) -> {#igmp{}, Payload} | binary()
     
         Types   Packet = Header | binary()
                 Header = #ether{} | #null{} | #linux_cooked{} | #arp{} |
                     #ipv4{} | #ipv6{} | #tcp{} | #sctp{} | #udp{} |
-                    #icmp{} | #icmp6{} | #gre{}
+                    #icmp{} | #icmp6{} | #igmp{} | #gre{}
 
     
     makesum(Packet) -> integer()
@@ -147,6 +148,9 @@ header and the offset value in the TCP header:
     * fix handling of neighbour discovery
     * simplify ICMPv6 header record and add a record for ICMPv6 type or
       add functions for ICMPv6 variable length payloads
+
+* IGMP
+    * support IGMPv3 variable payloads
 
 * merge in DLT\_IEEE802\_11 support from wierl
 
