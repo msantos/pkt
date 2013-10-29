@@ -45,6 +45,7 @@
         linux_cooked/1,
         icmp/1,
         icmp6/1,
+        igmp/1,
         ipv4/1,
         ipv6/1,
         ipv6_ah/1,
@@ -140,6 +141,9 @@ decapsulate_next({icmp, Data}, Headers) ->
 decapsulate_next({icmp6, Data}, Headers) ->
     {Header, Payload} = icmp6(Data),
     lists:reverse([Payload, Header|Headers]);
+decapsulate_next({igmp, Data}, Headers) ->
+    {Header, Payload} = igmp(Data),
+    lists:reverse([Payload, Header|Headers]);
 % IPv6 NONE pseudo-header
 decapsulate_next({ipv6_none, Data}, Headers) ->
     lists:reverse([Data|Headers]).
@@ -209,6 +213,7 @@ decode_next({Proto, Data}, Headers) when
     Proto =:= arp;
     Proto =:= icmp;
     Proto =:= icmp6;
+    Proto =:= igmp;
     Proto =:= sctp;
     Proto =:= sctp;
     Proto =:= tcp;
@@ -301,6 +306,10 @@ icmp(N) ->
 %% ICMPv6
 icmp6(N) ->
     pkt_icmp6:codec(N).
+
+%% IGMP
+igmp(N) ->
+    pkt_igmp:codec(N).
 
 %% Datalink types
 link_type(N) ->
