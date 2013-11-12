@@ -39,6 +39,7 @@
         makesum/1,
         ether/1,
         ether_type/1,
+        llc/1,
         arp/1,
         null/1,
         gre/1,
@@ -91,6 +92,9 @@ decapsulate_next({linux_cooked, Data}, Headers) ->
 decapsulate_next({ether, Data}, Headers) ->
     {Header, Payload} = ether(Data),
     decapsulate_next({next(Header), Payload}, [Header|Headers]);
+decapsulate_next({llc, Data}, Headers) ->
+    {Header, Payload} = llc(Data),
+    lists:reverse([Payload, Header|Headers]);
 
 decapsulate_next({ipv4, Data}, Headers) ->
     {Header, Payload} = ipv4(Data),
@@ -257,6 +261,9 @@ ether_type(N) ->
 %% ARP
 arp(N) ->
     pkt_arp:codec(N).
+
+llc(N) ->
+    pkt_llc:codec(N).
 
 %% IPv4
 ipv4(N) ->

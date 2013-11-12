@@ -3,6 +3,7 @@
 -include("pkt_protocol_family.hrl").
 
 -include("pkt_ether.hrl").
+-include("pkt_llc.hrl").
 -include("pkt_arp.hrl").
 
 -include("pkt_gre.hrl").

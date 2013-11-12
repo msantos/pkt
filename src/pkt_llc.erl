@@ -28,30 +28,21 @@
 %% LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 %% ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 %% POSSIBILITY OF SUCH DAMAGE.
--module(pkt_ether).
 
--include("pkt_ether.hrl").
+%% Logical-Link Control
+-module(pkt_llc).
 
--export([
-        codec/1,
-        type/1
-]).
+-include("pkt_llc.hrl").
 
-type(?ETH_P_IP) -> ipv4;
-type(?ETH_P_IPV6) -> ipv6;
-type(?ETH_P_ARP) -> arp;
-%% IEEE 802.3 Ethernet
-type(EtherType) when EtherType < 16#05DC -> llc.
+-export([codec/1]).
 
-codec(<<Dhost:6/bytes, Shost:6/bytes, Type:16, Payload/binary>>) ->
-%    Len = byte_size(Packet) - 4,
-%    <<Payload:Len/bytes, CRC:4/bytes>> = Packet,
-    {#ether{
-       dhost = Dhost, shost = Shost,
-       type = Type
-      }, Payload};
-codec(#ether{
-       dhost = Dhost, shost = Shost,
-       type = Type
-      }) ->
-    <<Dhost:6/bytes, Shost:6/bytes, Type:16>>.
+codec(<<DSAP:8, SSAP:8, Control:8, Vendor:3/bytes, PID:16, Payload/binary>>) ->
+    {#llc{
+        dsap = DSAP,
+        ssap = SSAP,
+        control = Control,
+        vendor = Vendor,
+        pid = PID
+    }, Payload};
+codec(#llc{dsap = DSAP, ssap = SSAP, control = Control, vendor = Vendor, pid = PID}) ->
+    <<DSAP:8, SSAP:8, Control:8, Vendor:3/bytes, PID:16>>.
