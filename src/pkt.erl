@@ -49,6 +49,7 @@
         igmp/1,
         ipv4/1,
         ipv6/1,
+        vrrp/1,
         ipv6_ah/1,
         ipv6_dstopts/1,
         ipv6_esp/1,
@@ -148,6 +149,9 @@ decapsulate_next({icmp6, Data}, Headers) ->
 decapsulate_next({igmp, Data}, Headers) ->
     {Header, Payload} = igmp(Data),
     lists:reverse([Payload, Header|Headers]);
+decapsulate_next({vrrp, Data}, Headers) ->
+    {Header, Payload} = vrrp(Data),
+    lists:reverse([Payload, Header | Headers]);
 % IPv6 NONE pseudo-header
 decapsulate_next({ipv6_none, Data}, Headers) ->
     lists:reverse([Data|Headers]).
@@ -317,6 +321,9 @@ icmp6(N) ->
 %% IGMP
 igmp(N) ->
     pkt_igmp:codec(N).
+
+vrrp(N) ->
+    pkt_vrrp:codec(N).
 
 %% Datalink types
 link_type(N) ->

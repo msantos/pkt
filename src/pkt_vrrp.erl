@@ -1,4 +1,4 @@
-%% Copyright (c) 2013, Michael Santos <michael.santos@gmail.com>
+%% Copyright (c) 2009-2013, Michael Santos <michael.santos@gmail.com>
 %% All rights reserved.
 %%
 %% Redistribution and use in source and binary forms, with or without
@@ -28,46 +28,27 @@
 %% LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 %% ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 %% POSSIBILITY OF SUCH DAMAGE.
--module(pkt_ipproto).
-
--include("pkt_ipproto.hrl").
+-module(pkt_vrrp).
 
 -export([codec/1]).
 
-% IPPROTO_HOPOPTS and IPROTO_IP are both defined as 0
-%codec(?IPPROTO_IP) -> ip;
-codec(?IPPROTO_ICMP) -> icmp;
-codec(?IPPROTO_IGMP) -> igmp;
-codec(?IPPROTO_ICMPV6) -> icmp6;
-codec(?IPPROTO_TCP) -> tcp;
-codec(?IPPROTO_UDP) -> udp;
-codec(?IPPROTO_IPV6) -> ipv6;
-codec(?IPPROTO_VRRP) -> vrrp;
-codec(?IPPROTO_SCTP) -> sctp;
-codec(?IPPROTO_GRE) -> gre;
-codec(?IPPROTO_RAW) -> raw;
+-include("pkt_vrrp.hrl").
 
-codec(?IPPROTO_HOPOPTS) -> ipv6_hopopts;
-codec(?IPPROTO_ROUTING) -> ipv6_routing;
-codec(?IPPROTO_FRAGMENT) -> ipv6_fragment;
-codec(?IPPROTO_NONE) -> ipv6_none;
-codec(?IPPROTO_DSTOPTS) -> ipv6_dstopts;
-codec(?IPPROTO_MH) -> ipv6_mh;
-
-codec(ip) -> ?IPPROTO_IP;
-codec(icmp) -> ?IPPROTO_ICMP;
-codec(igmp) -> ?IPPROTO_IGMP;
-codec(icmp6) -> ?IPPROTO_ICMPV6;
-codec(tcp) -> ?IPPROTO_TCP;
-codec(udp) -> ?IPPROTO_UDP;
-codec(ipv6) -> ?IPPROTO_IPV6;
-codec(vrrp) -> ?IPPROTO_VRRP;
-codec(sctp) -> ?IPPROTO_SCTP;
-codec(gre) -> ?IPPROTO_GRE;
-
-codec(ipv6_hopopts) -> ?IPPROTO_HOPOPTS;
-codec(ipv6_routing) -> ?IPPROTO_ROUTING;
-codec(ipv6_fragment) -> ?IPPROTO_FRAGMENT;
-codec(ipv6_none) -> ?IPPROTO_NONE;
-codec(ipv6_dstopts) -> ?IPPROTO_DSTOPTS ;
-codec(ipv6_mh) -> ?IPPROTO_MH.
+codec(<<Version:4, Type:4, VRID:8, Prio:8, CntIP:8, AuthType:8, AdverInt:8, Sum:16, Rest/binary>>) ->
+    ASize = CntIP * 4,
+    <<Addresses:ASize/binary, 0:64, Payload/binary>> = Rest, % 0:64 - Application Data {1,2}
+    {#vrrp{
+        version = Version,
+        type = Type,
+        vrid = VRID,
+        priority = Prio,
+        auth_type = AuthType,
+        adver_int = AdverInt,
+        sum = Sum,
+        ip_addresses = [{A, B, C, D} || <<A:8, B:8, C:8, D:8>> <= Addresses]
+    }, Payload};
+codec(#vrrp{version = Version, type = Type, vrid = VRID, priority = Prio, auth_type = AuthType, adver_int = AdverInt, sum = Sum, ip_addresses = Addresses}) ->
+    CntIP = length(Addresses),
+    ASize = CntIP * 4,
+    IPs = << <<A:8, B:8, C:8, D:8>> || {A, B, C, D} <- Addresses >>,
+    <<Version:4, Type:4, VRID:8, Prio:8, CntIP:8, AuthType:8, AdverInt:8, Sum:16, IPs:ASize/binary, 0:64>>.
