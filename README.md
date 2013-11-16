@@ -9,13 +9,13 @@ Originally part of epcap:
 
     pkt:decapsulate(Data) -> Packet
     pkt:decapsulate(Proto, Data) -> Packet
-    
+
         Types   Data = binary()
                 Proto = atom() | integer()
                 Packet = [ Header | Payload ]
                 Header = #ether{} | #arp{} | #null{} | #linux_cooked{} |
                     #ipv4{} | #ipv6{} | #tcp{} | #udp{} | #sctp{} | #icmp{} |
-                    #icmp6{} | #igmp{} | #gre{}
+                    #icmp6{} | #igmp{} | #gre{} | #llc{} | #vrrp{}
                 Payload = binary()
 
         Convert network protocols from binary data to a list of Erlang
@@ -39,7 +39,7 @@ Originally part of epcap:
                 Headers = [Header]
                 Header = #ether{} | #arp{} | #null{} | #linux_cooked{} |
                     #ipv4{} | #ipv6{} | #tcp{} | #udp{} | #sctp{} | #icmp{} |
-                    #icmp6{} | #igmp{} | #gre{}
+                    #icmp6{} | #igmp{} | #gre{} | #llc{} | #vrrp{}
                 SoFar = Headers | []
                 Payload = binary()
 
@@ -51,6 +51,8 @@ records and binaries. See include/pkt.hrl for definition of the record
 types.
 
     ether(Packet) -> {#ether{}, Payload} | binary()
+    llc(Packet) -> {#llc{}, Payload} | binary()
+    vrrp(Packet) -> {#vrrp{}, Payload} | binary()
     null(Packet) -> {#null{}, Payload} | binary()
     linux_cooked(Packet) -> {#linux_cooked{}, Payload} | binary()
     gre(Packet) -> {#gre{}, Payload} | binary()
@@ -63,20 +65,21 @@ types.
     icmp(Packet) -> {#icmp{}, Payload} | binary()
     icmp6(Packet) -> {#icmp6{}, Payload} | binary()
     igmp(Packet) -> {#igmp{}, Payload} | binary()
-    
+
         Types   Packet = Header | binary()
                 Header = #ether{} | #null{} | #linux_cooked{} | #arp{} |
                     #ipv4{} | #ipv6{} | #tcp{} | #sctp{} | #udp{} |
-                    #icmp{} | #icmp6{} | #igmp{} | #gre{}
+                    #icmp{} | #icmp6{} | #igmp{} | #gre{} | #llc{} |
+                    #vrrp{}
 
-    
+
     makesum(Packet) -> integer()
-    
+
         Types   Packet = IPv4_header | [IPv4_header, Header, Payload]
                 IPv4_header = #ipv4{}
                 Header = #tcp{} | #udp{}
                 Payload = binary()
-    
+
         Calculate the one's complement checksum of the packet.
 
         When computing the checksum, the header sum field must be set
