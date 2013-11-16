@@ -439,11 +439,10 @@ foldWithOverflow64(A) ->
 	E = (C + D) band 16#FFFFFFFFFFFFFFFF,
         case E < D of
 		true ->
-			F = E + 1; % overflow
+			E + 1; % overflow
 		false ->
-			F = E
-         end,
-         F.
+			E
+         end.
 
 foldWithOverflow32(A) ->
         C = A band 16#FFFFFFFF,
@@ -451,11 +450,10 @@ foldWithOverflow32(A) ->
 	E = (C + D) band 16#FFFFFFFF, 
         case E < D of
 		true ->
-			F = E + 1; % overflow
+			E + 1; % overflow
 		false ->
-			F = E
-         end,
-         F.
+			E
+         end.
 
 foldWithOverflow16(A) ->
         C = A band 16#FFFF,
@@ -463,11 +461,10 @@ foldWithOverflow16(A) ->
 	E = (C + D) band 16#FFFF, 
         case E < D of
 		true ->
-			F = E + 1; % overflow
+			E + 1; % overflow
 		false ->
-			F = E
-         end,
-         F.	        
+			E
+         end.	        
 
 makesum(Hdr) -> 
 	(checksum(Hdr) bxor 16#FFFF) band 16#FFFF. % bitwise-complement
