@@ -12,7 +12,14 @@ pkt_test_() ->
         decode_1(),
         decode_2(),
         decode_2_failure(),
-        decode_2_unsupported()
+        decode_2_unsupported(), 
+	makesum_1(),
+	makesum_2(),
+	makesum_4(),
+	makesum_8(),
+	makesum_16(),
+	makesum_32(),
+	makesum_64()
     ].
 
 packet(ether) ->
@@ -108,3 +115,48 @@ decode_2_unsupported() ->
                                10,190,15,172,236,0,64,161,73,4,2,0,0>>}},
         pkt:decode(ether, packet(tcp))
     ).
+
+makesum_1() ->
+    ?_assertEqual(
+        3839,
+        pkt:makesum(<<16#F1>>)
+    ).
+
+makesum_2() ->
+    ?_assertEqual(
+        3597,
+        pkt:makesum(<<16#F1, 16#F2>>)
+    ).
+
+makesum_4() ->
+    ?_assertEqual(
+        6680,
+        pkt:makesum(<<16#F1, 16#F2, 16#F3, 16#F4>>)
+    ).
+
+makesum_8() ->
+    ?_assertEqual(
+        11304,
+        pkt:makesum(<<16#F1, 16#F2, 16#F3, 16#F4, 16#F5, 16#F6, 16#F7, 16#F8>>)
+    ).
+
+makesum_16() ->
+    ?_assertEqual(
+        22608,
+        pkt:makesum(<<16#F1, 16#F2, 16#F3, 16#F4, 16#F5, 16#F6, 16#F7, 16#F8, 16#F1, 16#F2, 16#F3, 16#F4, 16#F5, 16#F6, 16#F7, 16#F8>>)
+    ).
+
+
+makesum_32() ->
+    ?_assertEqual(
+        45216,
+        pkt:makesum(<<16#F1, 16#F2, 16#F3, 16#F4, 16#F5, 16#F6, 16#F7, 16#F8, 16#F1, 16#F2, 16#F3, 16#F4, 16#F5, 16#F6, 16#F7, 16#F8, 16#F1, 16#F2, 16#F3, 16#F4, 16#F5, 16#F6, 16#F7, 16#F8, 16#F1, 16#F2, 16#F3, 16#F4, 16#F5, 16#F6, 16#F7, 16#F8 >>)
+    ).
+
+makesum_64() ->
+    ?_assertEqual(
+        24897,
+        pkt:makesum(<<16#F1, 16#F2, 16#F3, 16#F4, 16#F5, 16#F6, 16#F7, 16#F8, 16#F1, 16#F2, 16#F3, 16#F4, 16#F5, 16#F6, 16#F7, 16#F8, 16#F1, 16#F2, 16#F3, 16#F4, 16#F5, 16#F6, 16#F7, 16#F8, 16#F1, 16#F2, 16#F3, 16#F4, 16#F5, 16#F6, 16#F7, 16#F8, 16#F1, 16#F2, 16#F3, 16#F4, 16#F5, 16#F6, 16#F7, 16#F8, 16#F1, 16#F2, 16#F3, 16#F4, 16#F5, 16#F6, 16#F7, 16#F8, 16#F1, 16#F2, 16#F3, 16#F4, 16#F5, 16#F6, 16#F7, 16#F8, 16#F1, 16#F2, 16#F3, 16#F4, 16#F5, 16#F6, 16#F7, 16#F8>>)
+    ).
+
+

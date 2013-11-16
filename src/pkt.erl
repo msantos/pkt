@@ -405,11 +405,67 @@ checksum([#ipv4{
 
 checksum(#ipv4{} = H) ->
     checksum(ipv4(H));
-checksum(Hdr) ->
-    lists:foldl(fun compl/2, 0, [ W || <<W:16>> <= Hdr ]).
 
-makesum(Hdr) -> 16#FFFF - checksum(Hdr).
+checksum(Bin) ->
+ 	checksum(Bin, 0).
 
-compl(N) when N =< 16#FFFF -> N;
-compl(N) -> (N band 16#FFFF) + (N bsr 16).
-compl(N,S) -> compl(N+S).
+checksum(<<N1:64/integer, N2:64/integer, N3:64/integer, N4:64/integer, N5:64/integer, N6:64/integer, N7:64/integer, N8:64/integer, ReminderBin/binary>>, Checksum128Bit) ->
+ 	checksum(ReminderBin, N1+N2+N3+N4+N5+N6+N7+N8+Checksum128Bit);
+
+checksum(<<N1:64/integer, N2:64/integer, N3:64/integer, N4:64/integer, ReminderBin/binary>>, Checksum128Bit) ->
+ 	checksum(ReminderBin, N1+N2+N3+N4+Checksum128Bit);
+
+checksum(<<N1:64/integer, N2:64/integer, ReminderBin/binary>>, Checksum128Bit) ->
+ 	checksum(ReminderBin, N1+N2+Checksum128Bit);
+
+checksum(<<N:64/integer, ReminderBin/binary>>, Checksum128Bit) ->
+ 	checksum(ReminderBin, N+Checksum128Bit);
+
+checksum(<<N:16/integer, ReminderBin/binary>>, Checksum128Bit) ->
+ 	checksum(ReminderBin, N+Checksum128Bit);
+
+checksum(<<N:8/integer>>, Checksum128Bit) ->
+ 	checksum(<<>>, (N bsl 8)+Checksum128Bit);
+
+checksum(<<>>, Checksum128Bit) ->
+        Checksum64Bit = foldWithOverflow64(Checksum128Bit),
+        Checksum32Bit = foldWithOverflow32(Checksum64Bit),
+        Checksum16Bit = foldWithOverflow16(Checksum32Bit),
+        Checksum16Bit.
+
+foldWithOverflow64(A) ->
+        C = A band 16#FFFFFFFFFFFFFFFF,
+	D = (A bsr 64) band 16#FFFFFFFFFFFFFFFF,
+	E = (C + D) band 16#FFFFFFFFFFFFFFFF,
+        case E < D of
+		true ->
+			E + 1; % overflow
+		false ->
+			E
+         end.
+
+foldWithOverflow32(A) ->
+        C = A band 16#FFFFFFFF,
+	D = (A bsr 32) band 16#FFFFFFFF,
+	E = (C + D) band 16#FFFFFFFF, 
+        case E < D of
+		true ->
+			E + 1; % overflow
+		false ->
+			E
+         end.
+
+foldWithOverflow16(A) ->
+        C = A band 16#FFFF,
+	D = (A bsr 16) band 16#FFFF,
+	E = (C + D) band 16#FFFF, 
+        case E < D of
+		true ->
+			E + 1; % overflow
+		false ->
+			E
+         end.	        
+
+makesum(Hdr) -> 
+	(checksum(Hdr) bxor 16#FFFF) band 16#FFFF. % bitwise-complement
+
