@@ -45,19 +45,14 @@ codec(<<SPort:16, DPort:16, VTag:32, Sum:32, Payload/binary>>) ->
 -spec sctp_decode_chunks(binary(), list()) -> [#sctp_chunk{}].
 sctp_decode_chunks(<<>>, Acc) -> Acc;
 sctp_decode_chunks(<<Type:8, Flags:8, Length:16, Rest/binary>>, Acc) ->
-    L = case Length rem 4 of
+    {L, Pad} = case Length rem 4 of
         0 -> % No padding bytes
-            Length - 4;
+            {Length - 4, 0};
         N when N =< 3 -> % pad should be no more than 3 bytes
-            Length + (4 - N) - 4
+            {Length - 4, (4 - N) * 8}
     end,
-    case Length - 4 =< L of
-        true ->
-            [sctp_chunk(Type, Flags, Length, Rest) | Acc];
-        false ->
-            <<Payload:L/binary-unit:8, Tail/binary>> = Rest,
-            sctp_decode_chunks(Tail, [sctp_chunk(Type, Flags, Length, Payload) | Acc])
-    end.
+    <<Payload:L/binary-unit:8, 0:Pad, Tail/binary>> = Rest,
+    sctp_decode_chunks(Tail, [sctp_chunk(Type, Flags, Length, Payload) | Acc]).
 
 -spec sctp_chunk(byte(), byte(), non_neg_integer(), binary()) -> #sctp_chunk{}.
 sctp_chunk(Ctype, Cflags, Clen, Payload) ->
