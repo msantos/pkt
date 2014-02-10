@@ -54,7 +54,7 @@ decode_chunks(<<Type:8, Flags:8, Length:16, Rest/binary>>, Acc) ->
         N when N =< 3 -> % pad should be no more than 3 bytes
             {Length - 4, (4 - N) * 8}
     end,
-    <<Payload:L/binary-unit:8, 0:Pad, Tail/binary>> = Rest,
+    <<Payload:L/binary-unit:8, _:Pad, Tail/binary>> = Rest,
     decode_chunks(Tail, [chunk(Type, Flags, Length, Payload) | Acc]);
 %% Ignore other bytes which are not SCTP chunks (VSS, ...)
 decode_chunks(Other, Acc) -> {Acc, Other}.
