@@ -34,16 +34,17 @@
 
 -export([codec/1]).
 
--spec codec(binary()) -> {#sctp{}, []}.
+-spec codec(binary()) -> {#sctp{}, binary()}.
 codec(<<SPort:16, DPort:16, VTag:32, Sum:32, Payload/binary>>) ->
+    {Chunks, Other} = sctp_decode_chunks(Payload, []),
     SCTP = #sctp{
         sport = SPort, dport = DPort, vtag = VTag,
-        sum = Sum, chunks = sctp_decode_chunks(Payload, [])
+        sum = Sum, chunks = Chunks
     },
-    {SCTP, []}.
+    {SCTP, Other}.
 
 -spec sctp_decode_chunks(binary(), list()) -> [#sctp_chunk{}].
-sctp_decode_chunks(<<>>, Acc) -> Acc;
+sctp_decode_chunks(<<>>, Acc) -> {Acc, <<>>};
 sctp_decode_chunks(<<Type:8, Flags:8, Length:16, Rest/binary>>, Acc) ->
     {L, Pad} = case Length rem 4 of
         0 -> % No padding bytes
@@ -52,7 +53,9 @@ sctp_decode_chunks(<<Type:8, Flags:8, Length:16, Rest/binary>>, Acc) ->
             {Length - 4, (4 - N) * 8}
     end,
     <<Payload:L/binary-unit:8, 0:Pad, Tail/binary>> = Rest,
-    sctp_decode_chunks(Tail, [sctp_chunk(Type, Flags, Length, Payload) | Acc]).
+    sctp_decode_chunks(Tail, [sctp_chunk(Type, Flags, Length, Payload) | Acc]);
+%% Ignore other bytes which are not SCTP chunks (VSS, ...)
+sctp_decode_chunks(Other, Acc) -> {Acc, Other}.
 
 -spec sctp_chunk(byte(), byte(), non_neg_integer(), binary()) -> #sctp_chunk{}.
 sctp_chunk(Ctype, Cflags, Clen, Payload) ->
