@@ -192,7 +192,7 @@ sctp_error(Code, _Length, Opts) ->
         code = Code,
         descr = format_error(Code),
         opts = [
-            {data = Opts}
+            {data, Opts}
         ]
     }.
 
