@@ -45,7 +45,6 @@ codec(<<SPort:16, DPort:16, VTag:32, Sum:32, Payload/binary>>) ->
 
 %% Internal functions
 
--spec decode_chunks(binary(), list()) -> [#sctp_chunk{}].
 decode_chunks(<<>>, Acc) -> {Acc, <<>>};
 decode_chunks(<<Type:8, Flags:8, Length:16, Rest/binary>>, Acc) ->
     {L, Pad} = case Length rem 4 of

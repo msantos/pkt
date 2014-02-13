@@ -76,7 +76,6 @@ codec(#tcp{
       Opt/binary, 0:Pad>>.
 
 %% @doc Used to decoding or encoding the TCP options.
--spec options(binary()) -> [proplists:property()].
 options(Options) ->
     options(Options, []).
 
