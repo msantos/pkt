@@ -20,5 +20,5 @@ encode_fail() ->
     ?_assertException(
         error,
         function_clause,
-        pkt_ipproto:codec(31337)
+        pkt_ipproto:codec(254)
     ).

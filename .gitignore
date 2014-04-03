@@ -1,5 +1,8 @@
-ebin
+ebin/
+priv/
+.eunit/
 .test
-.eunit
 *.swp
 rebar
+*.beam
+.depsolver_plt

@@ -12,14 +12,14 @@ pkt_test_() ->
         decode_1(),
         decode_2(),
         decode_2_failure(),
-        decode_2_unsupported(), 
-	makesum_1(),
-	makesum_2(),
-	makesum_4(),
-	makesum_8(),
-	makesum_16(),
-	makesum_32(),
-	makesum_64()
+        decode_2_unsupported(),
+        makesum_1(),
+        makesum_2(),
+        makesum_4(),
+        makesum_8(),
+        makesum_16(),
+        makesum_32(),
+        makesum_64()
     ].
 
 packet(ether) ->
@@ -158,5 +158,3 @@ makesum_64() ->
         24897,
         pkt:makesum(<<16#F1, 16#F2, 16#F3, 16#F4, 16#F5, 16#F6, 16#F7, 16#F8, 16#F1, 16#F2, 16#F3, 16#F4, 16#F5, 16#F6, 16#F7, 16#F8, 16#F1, 16#F2, 16#F3, 16#F4, 16#F5, 16#F6, 16#F7, 16#F8, 16#F1, 16#F2, 16#F3, 16#F4, 16#F5, 16#F6, 16#F7, 16#F8, 16#F1, 16#F2, 16#F3, 16#F4, 16#F5, 16#F6, 16#F7, 16#F8, 16#F1, 16#F2, 16#F3, 16#F4, 16#F5, 16#F6, 16#F7, 16#F8, 16#F1, 16#F2, 16#F3, 16#F4, 16#F5, 16#F6, 16#F7, 16#F8, 16#F1, 16#F2, 16#F3, 16#F4, 16#F5, 16#F6, 16#F7, 16#F8>>)
     ).
-
-

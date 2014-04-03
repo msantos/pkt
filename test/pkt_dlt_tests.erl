@@ -20,5 +20,5 @@ encode_fail() ->
     ?_assertException(
         error,
         function_clause,
-        pkt_dlt:codec(31337)
+        pkt_dlt:codec(254)
     ).

@@ -38,7 +38,7 @@ sctp_init_chunk() ->
                     }
                 }
             ]
-        }, []
+        }, <<>>
     },
     ?_assertEqual(Result, pkt:sctp(Data)).
 
@@ -60,7 +60,7 @@ sctp_init_ack_chunk() ->
                     }
                 }
             ]
-        }, []
+        }, <<>>
     },
     ?_assertEqual(Result, pkt:sctp(Data)).
 
@@ -73,7 +73,7 @@ sctp_cookie_echo_chunk() ->
                     #sctp_chunk_cookie_echo{cookie = ?SCTP_INIT_ACK_STATE_COOKIE}
                 }
             ]
-        }, []
+        }, <<>>
     },
     ?_assertEqual(Result, pkt:sctp(Data)).
 
@@ -84,7 +84,7 @@ sctp_cookie_ack_chunk() ->
             sport = 2006,dport = 59724,vtag = 2970287606,sum = 3517160060,chunks = [
                 #sctp_chunk{type = 11,flags = 0,len = 0,payload = #sctp_chunk_cookie_ack{}}
             ]
-        }, []
+        }, <<>>
     },
     ?_assertEqual(Result, pkt:sctp(Data)).
 
@@ -97,7 +97,7 @@ sctp_data_chunk() ->
                     #sctp_chunk_data{tsn = 2961831077,sid = 0,ssn = 0,ppi = 0,data = <<"Test 0">>}
                 }
             ]
-        }, []
+        }, <<>>
     },
     ?_assertEqual(Result, pkt:sctp(Data)).
 
@@ -115,7 +115,7 @@ sctp_sack_chunk() ->
                     }
                 }
             ]
-        }, []
+        }, <<>>
     },
     ?_assertEqual(Result, pkt:sctp(Data)).
 
@@ -128,7 +128,7 @@ sctp_heartbeat_chunk() ->
                     #sctp_chunk_heartbeat{type = 1,info = ?SCTP_HEARTBEAT_INFO}
                 }
             ]
-        }, []
+        }, <<>>
     },
     ?_assertEqual(Result, pkt:sctp(Data)).
 
@@ -141,7 +141,7 @@ sctp_heartbeat_ack_chunk() ->
                     #sctp_chunk_heartbeat_ack{type = 1,info = ?SCTP_HEARTBEAT_INFO}
                 }
             ]
-        }, []
+        }, <<>>
     },
     ?_assertEqual(Result, pkt:sctp(Data)).
 
@@ -157,7 +157,7 @@ sctp_abort_chunk() ->
                         ]}
                     ]}
                 }]
-        }, []
+        }, <<>>
     },
     ?_assertEqual(Result, pkt:sctp(Data)).
 
@@ -170,7 +170,7 @@ sctp_shutdown_chunk() ->
                     #sctp_chunk_shutdown{tsn_ack = 430357211}
                 }
             ]
-        }, []
+        }, <<>>
     },
     ?_assertEqual(Result, pkt:sctp(Data)).
 
@@ -181,7 +181,7 @@ sctp_shutdown_ack_chunk() ->
             sport = 2006,dport = 44282,vtag = 1619613099,sum = 3544315687,chunks = [
                 #sctp_chunk{type = 8,flags = 0,len = 0,payload = #sctp_chunk_shutdown_ack{}}
             ]
-        }, []
+        }, <<>>
     },
     ?_assertEqual(Result, pkt:sctp(Data)).
 
@@ -192,6 +192,6 @@ sctp_shutdown_complete_chunk() ->
             sport = 44282,dport = 2006,vtag = 3894864518,sum = 2141610842,chunks = [
                 #sctp_chunk{type = 14,flags = 0,len = 0,payload = #sctp_chunk_shutdown_complete{}}
             ]
-        }, []
+        }, <<>>
     },
     ?_assertEqual(Result, pkt:sctp(Data)).
