@@ -406,6 +406,41 @@ checksum([#ipv4{
 checksum(#ipv4{} = H) ->
     checksum(ipv4(H));
 
+checksum([#ipv6{
+	     class = _Class, 
+	     flow = _Flow,
+	     len = IPLen, next = Next, hop = _Hop,
+	     saddr = {SA1, SA2, SA3, SA4, SA5, SA6, SA7, SA8},
+	     daddr = {DA1, DA2, DA3, DA4, DA5, DA6, DA7, DA8}
+	    },
+	    #tcp{
+                 off = Off
+                 } = TCPhdr,
+	  Payload
+	 ]) ->
+    PayloadLen = IPLen + (Off * 4),
+    Pad = case IPLen rem 2 of
+	      0 -> 0;
+	      1 -> 8
+	  end,
+    TCP_Header = pkt:tcp(TCPhdr#tcp{sum=0}),
+    pkt:checksum(
+      <<
+        %% calcucaltion of the ipv6 pseudo header
+	SA1:16, SA2:16, SA3:16, SA4:16, SA5:16, SA6:16, SA7:16, SA8:16,
+	DA1:16, DA2:16, DA3:16, DA4:16, DA5:16, DA6:16, DA7:16, DA8:16,
+	0:8, Next:8, IPLen:16,
+        %% calculation of the TCP header the checksum is set to 0
+        TCP_Header/binary,
+        %% calcualtion of the padded payload
+	Payload:PayloadLen/binary,
+	0:Pad>>
+     );
+
+checksum(#ipv6{} = H) ->
+    checksum(ipv6(H));
+
+
 checksum(Bin) ->
  	checksum(Bin, 0).
 
