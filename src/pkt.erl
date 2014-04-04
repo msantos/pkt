@@ -415,22 +415,23 @@ checksum([#ipv6{
 	    },
 	    #tcp{
                  off = Off
-                 } = TCPhdr,
+            } = TCPhdr,
 	  Payload
 	 ]) ->
-    PayloadLen = IPLen + (Off * 4),
-    Pad = case IPLen rem 2 of
+    PayloadLen = IPLen - (Off * 4),
+    Pad = case PayloadLen rem 2 of
 	      0 -> 0;
 	      1 -> 8
 	  end,
+    %% calculation of the TCP header the checksum is set to 0
     TCP_Header = pkt:tcp(TCPhdr#tcp{sum=0}),
     pkt:checksum(
       <<
-        %% calcucaltion of the ipv6 pseudo header
+        %% calcucaltion of the ipv6 pseudo header: http://www.ietf.org/rfc/rfc2460.txt
 	SA1:16, SA2:16, SA3:16, SA4:16, SA5:16, SA6:16, SA7:16, SA8:16,
 	DA1:16, DA2:16, DA3:16, DA4:16, DA5:16, DA6:16, DA7:16, DA8:16,
-	0:8, Next:8, IPLen:16,
-        %% calculation of the TCP header the checksum is set to 0
+	IPLen:32, 
+        0:24, Next:8,
         TCP_Header/binary,
         %% calcualtion of the padded payload
 	Payload:PayloadLen/binary,
@@ -441,7 +442,7 @@ checksum(#ipv6{} = H) ->
     checksum(ipv6(H));
 
 
-checksum(Bin) ->
+checksum(Bin) when is_binary(Bin) ->
  	checksum(Bin, 0).
 
 checksum(<<N1:64/integer, N2:64/integer, N3:64/integer, N4:64/integer, N5:64/integer, N6:64/integer, N7:64/integer, N8:64/integer, ReminderBin/binary>>, Checksum128Bit) ->
