@@ -500,7 +500,7 @@ foldWithOverflow16(A) ->
 			E + 1; % overflow
 		false ->
 			E
-         end.	        
+         end.
 
 makesum(Hdr) ->
 	(checksum(Hdr) bxor 16#FFFF) band 16#FFFF. % bitwise-complement
