@@ -424,7 +424,7 @@ checksum([#ipv6{
 	      1 -> 8
 	  end,
     %% calculation of the TCP header the checksum is set to 0
-    TCP_Header = pkt:tcp(TCPhdr#tcp{sum=0}),
+    TCP_Header = pkt:tcp(TCPhdr),
     pkt:checksum(
       <<
         %% calcucaltion of the ipv6 pseudo header: http://www.ietf.org/rfc/rfc2460.txt
