@@ -415,7 +415,7 @@ checksum([#ipv6{
                  off = Off
             } = TCPhdr,
 	  Payload
-	 ]) ->
+	 ]) when Next == ?IPPROTO_TCP ->
     PayloadLen = IPLen - (Off * 4),
     Pad = case PayloadLen rem 2 of
 	      0 -> 0;
