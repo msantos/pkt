@@ -407,9 +407,7 @@ checksum(#ipv4{} = H) ->
     checksum(ipv4(H));
 
 checksum([#ipv6{
-             class = _Class, 
-	     flow = _Flow,
-	     len = IPLen, next = Next, hop = _Hop,
+	     len = IPLen, next = Next,
 	     saddr = {SA1, SA2, SA3, SA4, SA5, SA6, SA7, SA8},
 	     daddr = {DA1, DA2, DA3, DA4, DA5, DA6, DA7, DA8}
 	    },
