@@ -425,7 +425,7 @@ checksum([#ipv6{
     TCP_Header = pkt:tcp(TCPhdr),
     pkt:checksum(
       <<
-        %% calcuclation of the ipv6 pseudo header: rfc2460
+        %% calculation of the ipv6 pseudo header: rfc2460
 	SA1:16, SA2:16, SA3:16, SA4:16, SA5:16, SA6:16, SA7:16, SA8:16,
 	DA1:16, DA2:16, DA3:16, DA4:16, DA5:16, DA6:16, DA7:16, DA8:16,
         IPLen:32, 
