@@ -12,7 +12,20 @@ codec_test_() ->
         ipv6_tcp_makesum_3(),
         ipv6_tcp_makesum_4(),
         ipv6_tcp_makesum_5(),
-        ipv6_tcp_calculate_checksum_1()
+        ipv6_tcp_calculate_checksum_1(),
+        ipv6_udp_makesum_1(),
+        ipv6_udp_makesum_2(),
+        ipv6_udp_makesum_3(),
+        ipv6_udp_verify_checksum_1(),
+        ipv6_udp_verify_checksum_2(),
+        ipv6_udp_verify_checksum_3(),
+        ipv6_tcp_verify_checksum_1(),
+        ipv6_tcp_verify_checksum_2(),
+        ipv6_tcp_verify_checksum_3(),
+        ipv6_tcp_verify_checksum_4(),
+        ipv6_tcp_verify_checksum_5(),
+        ipv6_tcp_build_checksum_1(),
+        ipv6_udp_build_checksum_1()
     ].
 
 packet() ->
@@ -188,4 +201,126 @@ ipv6_tcp_calculate_checksum_1() ->
     ?_assertEqual(
         48664,
         Checksum
+    ).
+
+ipv6_udp_packet_1() ->
+    [#ipv6{v = 6,class = 0,flow = 0,len = 42,next = 17,
+       hop = 255,
+       saddr = {8194,22395,51079,1,40407,23622,58249,17245},
+       daddr = {64768,0,0,0,40647,42751,65133,30684}},
+     #udp{sport = 9903,dport = 53,ulen = 42,sum = 55561},
+     <<238,114,1,0,0,1,0,0,0,0,0,0,5,100,97,105,115,121,6,117,98,117,110,116,117,3,99,111,109,0,0,1,0,1>>].
+
+ipv6_udp_packet_2() ->
+    [#ipv6{v = 6,class = 0,flow = 0,len = 44,next = 17,hop = 1,
+       saddr = {65152,0,0,0,21078,43263,65025,7903},
+       daddr = {65282,0,0,0,0,0,1,2}},
+     #udp{sport = 56868,dport = 547,ulen = 44,sum = 37991},
+     <<11,53,24,20,0,8,0,2,255,255,0,1,0,14,0,1,0,1,26,213,31,121,80,86,168,1,30,223,0,6,0,4,0,23,0,31>>].
+
+ipv6_udp_packet_3() ->
+    [#ipv6{v = 6,class = 0,flow = 0,len = 287,next = 17,
+       hop = 255,
+       saddr = {64768,0,0,0,40647,42751,65133,30684},
+       daddr = {8194,22395,51079,1,63891,16752,53406,9399}},
+     #udp{sport = 53,dport = 53489,ulen = 287,sum = 34044},
+     <<41,29,129,128,0,1,0,7,0,0,0,0,2,97,117,8,100,111,119,110,108,111,97,100,13,119,105,110,100,111,119,115,117,112,
+     100,97,116,101,3,99,111,109,0,0,1,0,1,192,12,0,5,0,1,0,0,3,169,0,36,10,97,117,100,111,119,110,108,111,97,
+     100,13,119,105,110,100,111,119,115,117,112,100,97,116,101,5,110,115,97,116,99,3,110,101,116,0,192,59,0,5,
+     0,1,0,0,2,10,0,8,5,116,50,101,120,116,192,59,192,107,0,5,0,1,0,0,2,10,0,42,2,97,117,8,100,111,119,110,108,
+     111,97,100,13,119,105,110,100,111,119,115,117,112,100,97,116,101,3,99,111,109,9,101,100,103,101,115,117,105,
+     116,101,192,90,192,127,0,5,0,1,0,0,27,210,0,16,4,97,54,57,53,1,100,6,97,107,97,109,97,105,192,90,192,181,0,
+     5,0,1,0,0,0,87,0,38,4,97,54,57,53,1,100,6,97,107,97,109,97,105,3,110,101,116,1,48,1,49,2,99,110,10,97,107,97,
+     109,97,105,116,101,99,104,192,90,192,209,0,1,0,1,0,0,0,87,0,4,2,21,243,49,192,209,0,1,0,1,0,0,0,87,0,4,23,62,99,34>>].
+
+ipv6_udp_makesum_1() ->
+    Checksum = pkt:makesum(ipv6_udp_packet_1()),
+    ?_assertEqual(
+        16#FFFF,
+        Checksum
+    ).
+
+ipv6_udp_makesum_2() ->
+    Checksum = pkt:makesum(ipv6_udp_packet_2()),
+    ?_assertEqual(
+        16#FFFF,
+        Checksum
+    ).
+
+ipv6_udp_makesum_3() ->
+    Checksum = pkt:makesum(ipv6_udp_packet_3()),
+    ?_assertEqual(
+        16#FFFF,
+        Checksum
+    ).
+
+ipv6_udp_verify_checksum_1() ->
+    Result = pkt:verify_checksum(ipv6_udp_packet_1()),
+    ?_assertEqual(
+        true,
+        Result
+    ).
+
+ipv6_udp_verify_checksum_2() ->
+    Result = pkt:verify_checksum(ipv6_udp_packet_2()),
+    ?_assertEqual(
+        true,
+        Result
+    ).
+
+ipv6_udp_verify_checksum_3() ->
+    Result = pkt:verify_checksum(ipv6_udp_packet_3()),
+    ?_assertEqual(
+        true,
+        Result
+    ).
+
+ipv6_tcp_verify_checksum_1() ->
+    Result = pkt:verify_checksum(ipv6_tcp_packet_1()),
+    ?_assertEqual(
+        true,
+        Result
+    ).
+
+ipv6_tcp_verify_checksum_2() ->
+    Result = pkt:verify_checksum(ipv6_tcp_packet_2()),
+    ?_assertEqual(
+        true,
+        Result
+    ).
+
+ipv6_tcp_verify_checksum_3() ->
+    Result = pkt:verify_checksum(ipv6_tcp_packet_3()),
+    ?_assertEqual(
+        true,
+        Result
+    ).
+
+ipv6_tcp_verify_checksum_4() ->
+    Result = pkt:verify_checksum(ipv6_tcp_packet_4()),
+    ?_assertEqual(
+        true,
+        Result
+    ).
+
+ipv6_tcp_verify_checksum_5() ->
+    Result = pkt:verify_checksum(ipv6_tcp_packet_5()),
+    ?_assertEqual(
+        true,
+        Result
+    ).
+
+
+ipv6_udp_build_checksum_1() ->
+    Result = pkt:build_checksum(ipv6_udp_packet_1()),
+    ?_assertEqual(
+        {ipv6_udp, 55561},
+        Result
+    ).
+
+ipv6_tcp_build_checksum_1() ->
+    Result = pkt:build_checksum(ipv6_tcp_packet_1()),
+    ?_assertEqual(
+        {ipv6_tcp, 27913},
+        Result
     ).
