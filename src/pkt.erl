@@ -522,6 +522,10 @@ makesum([IP, UDP, Payload]) when % handle UDP packets
 makesum(Hdr) ->
 	(checksum(Hdr) bxor 16#FFFF) band 16#FFFF. % bitwise-complement
 
+%%Note:
+%% - Checksum building for tunneled packets according to RFC 6936 is not supported
+%% - Jumbo packets are not supported
+%% - Extension headers are not supported
 
 build_checksum([#ipv4{} = IP, #tcp{} = TCP, Payload]) -> % handle IPv4 TCP packets
     {ipv4_tcp, makesum(IP#ipv4{sum=0}), makesum([IP, TCP#tcp{sum = 0}, Payload])};
