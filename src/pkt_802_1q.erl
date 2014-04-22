@@ -28,29 +28,20 @@
 %% LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 %% ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 %% POSSIBILITY OF SUCH DAMAGE.
--module(pkt_ether).
 
--include("pkt_ether.hrl").
+%% IEEE 802.1Q
+-module(pkt_802_1q).
 
--export([codec/1, type/1]).
+-include("pkt_802_1q.hrl").
 
-type(?ETH_P_IP) -> ipv4;
-type(?ETH_P_IPV6) -> ipv6;
-type(?ETH_P_ARP) -> arp;
-%% IEEE 802.3 Ethernet
-type(EtherType) when EtherType < 16#05DC -> llc;
-%% 802.1Q Virtual LAN
-type(?ETH_P_802_1Q) -> '802.1q'.
+-export([codec/1]).
 
-codec(<<Dhost:6/bytes, Shost:6/bytes, Type:16, Payload/binary>>) ->
-%    Len = byte_size(Packet) - 4,
-%    <<Payload:Len/bytes, CRC:4/bytes>> = Packet,
-    {#ether{
-       dhost = Dhost, shost = Shost,
-       type = Type
-      }, Payload};
-codec(#ether{
-       dhost = Dhost, shost = Shost,
-       type = Type
-      }) ->
-    <<Dhost:6/bytes, Shost:6/bytes, Type:16>>.
+codec(<<TPID:16, Prio:3, CFI:1, VID:12, Payload/binary>>) ->
+    {#'802.1q'{
+        tpid = TPID,
+        prio = Prio,
+        cfi = CFI,
+        vid = VID
+    }, Payload};
+codec(#'802.1q'{tpid = TPID, prio = Prio, cfi = CFI, vid = VID}) ->
+    <<TPID:16, Prio:3, CFI:1, VID:12>>.

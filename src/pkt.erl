@@ -39,6 +39,7 @@
         makesum/1,
         ether/1,
         ether_type/1,
+        '802.1q'/1,
         llc/1,
         arp/1,
         null/1,
@@ -92,6 +93,9 @@ decapsulate_next({linux_cooked, Data}, Headers) ->
     decapsulate_next({next(Header), Payload}, [Header|Headers]);
 decapsulate_next({ether, Data}, Headers) ->
     {Header, Payload} = ether(Data),
+    decapsulate_next({next(Header), Payload}, [Header|Headers]);
+decapsulate_next({'802.1q', Data}, Headers) ->
+    {Header, Payload} = '802.1q'(Data),
     decapsulate_next({next(Header), Payload}, [Header|Headers]);
 decapsulate_next({llc, Data}, Headers) ->
     {Header, Payload} = llc(Data),
@@ -237,6 +241,7 @@ decode_next({Proto, Data}, Headers) when
 next(#null{family = Family}) -> family(Family);
 next(#linux_cooked{pro = Pro}) -> ether_type(Pro);
 next(#ether{type = Type}) -> ether_type(Type);
+next(#'802.1q'{vid = Type}) -> ether_type(Type);
 next(#ipv4{p = P}) -> ipproto(P);
 next(#gre{type = Type}) -> ether_type(Type);
 next(#ipv6{next = Next}) -> ipproto(Next);
@@ -268,6 +273,9 @@ arp(N) ->
 
 llc(N) ->
     pkt_llc:codec(N).
+
+'802.1q'(N) ->
+    pkt_802_1q:codec(N).
 
 %% IPv4
 ipv4(N) ->
