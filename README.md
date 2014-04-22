@@ -15,7 +15,7 @@ Originally part of epcap:
                 Packet = [ Header | Payload ]
                 Header = #ether{} | #arp{} | #null{} | #linux_cooked{} |
                     #ipv4{} | #ipv6{} | #tcp{} | #udp{} | #sctp{} | #icmp{} |
-                    #icmp6{} | #igmp{} | #gre{} | #llc{} | #vrrp{}
+                    #icmp6{} | #igmp{} | #gre{} | #llc{} | #vrrp{} | #'802.1q'{}
                 Payload = binary()
 
         Convert network protocols from binary data to a list of Erlang
@@ -39,7 +39,7 @@ Originally part of epcap:
                 Headers = [Header]
                 Header = #ether{} | #arp{} | #null{} | #linux_cooked{} |
                     #ipv4{} | #ipv6{} | #tcp{} | #udp{} | #sctp{} | #icmp{} |
-                    #icmp6{} | #igmp{} | #gre{} | #llc{} | #vrrp{}
+                    #icmp6{} | #igmp{} | #gre{} | #llc{} | #vrrp{} | #'802.1q'{}
                 SoFar = Headers | []
                 Payload = binary()
 
@@ -53,6 +53,7 @@ types.
     ether(Packet) -> {#ether{}, Payload} | binary()
     llc(Packet) -> {#llc{}, Payload} | binary()
     vrrp(Packet) -> {#vrrp{}, Payload} | binary()
+    '802.1q'(Packet) -> {#'802.1q'{}, Payload} | binary()
     null(Packet) -> {#null{}, Payload} | binary()
     linux_cooked(Packet) -> {#linux_cooked{}, Payload} | binary()
     gre(Packet) -> {#gre{}, Payload} | binary()
@@ -70,7 +71,7 @@ types.
                 Header = #ether{} | #null{} | #linux_cooked{} | #arp{} |
                     #ipv4{} | #ipv6{} | #tcp{} | #sctp{} | #udp{} |
                     #icmp{} | #icmp6{} | #igmp{} | #gre{} | #llc{} |
-                    #vrrp{}
+                    #vrrp{} | #'802.1q'{}
 
 
     makesum(Packet) -> integer()
