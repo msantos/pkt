@@ -4,3 +4,11 @@
         csum = 0,
         group
     }).
+
+
+-record(igmp_group, {
+  type = 0,
+  addr,
+  sources = [],
+  aux = <<>>
+  }).

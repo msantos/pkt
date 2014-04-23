@@ -34,6 +34,15 @@
 
 -export([codec/1]).
 
+
+% IGMPv3 message, http://tools.ietf.org/html/rfc3376#page-12
+codec(<<Type:8, _:8, Checksum:16, _:16, GroupCount:16, Bin/binary>>) when Type == 16#22 ->
+    {Groups, Payload} = unpack_groups(GroupCount, Bin),
+    {#igmp{
+        type = Type, csum = Checksum,
+        group = Groups
+    }, Payload};
+
 % IGMPv2 messages
 codec(<<Type:8, Code:8, Checksum:16,
     DA1:8, DA2:8, DA3:8, DA4:8, Payload/binary>>) ->
@@ -41,8 +50,32 @@ codec(<<Type:8, Code:8, Checksum:16,
         type = Type, code = Code, csum = Checksum,
         group = {DA1,DA2,DA3,DA4}
     }, Payload};
+
+codec(#igmp{
+        type = Type, csum = Checksum,
+        group = Groups
+    }) when Type == 16#22 andalso is_list(Groups) ->
+    GroupBin = [pack_group(Group) || Group <- Groups],
+    iolist_to_binary([<<Type:8, 0:8, Checksum:16, 0:16, (length(Groups)):16>>, GroupBin]);
+
 codec(#igmp{
         type = Type, code = Code, csum = Checksum,
         group = {DA1,DA2,DA3,DA4}
     }) ->
     <<Type:8, Code:8, Checksum:16, DA1:8, DA2:8, DA3:8, DA4:8>>.
+
+
+
+unpack_groups(0, Bin) -> {[], Bin};
+unpack_groups(Count, <<Type, Len, SourceCount:16, I1,I2,I3,I4, Bin/binary>>) ->
+  SourceLength = SourceCount*4,
+  <<SourceBin:SourceLength/binary, Aux:Len/binary, Rest/binary>> = Bin,
+  Sources = [{S1,S2,S3,S4} || <<S1,S2,S3,S4>> <= SourceBin],
+  {Groups, Payload} = unpack_groups(Count - 1, Rest),
+  {[#igmp_group{type = Type, addr = {I1,I2,I3,I4}, sources = Sources, aux = Aux}|Groups], Payload}.
+
+
+pack_group(#igmp_group{type = Type, aux = Aux, addr = {I1,I2,I3,I4}, sources = Sources}) ->
+  SourcesBin = [<<S1,S2,S3,S4>> || {S1,S2,S3,S4} <- Sources],
+  [<<Type, (size(Aux)), (length(Sources)):16, I1,I2,I3,I4>>, SourcesBin, Aux].
+
