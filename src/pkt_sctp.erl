@@ -141,7 +141,6 @@ init_params(<<9:16, 8:16, Value:32, Rest/binary>>, Acc) ->
 %% Host Name Address
 init_params(<<11:16, Length:16, Rest/binary>>, Acc) ->
     L = Length - 4,
-    io:format("blblblbl:~p~n", [Rest]),
     <<Hostname:L/binary-unit:8, Tail/binary>> = Rest,
     init_params(Tail, [{hostname, Hostname} | Acc]);
 %% Supported Address Types
