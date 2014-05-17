@@ -141,6 +141,7 @@ init_params(<<9:16, 8:16, Value:32, Rest/binary>>, Acc) ->
 %% Host Name Address
 init_params(<<11:16, Length:16, Rest/binary>>, Acc) ->
     L = Length - 4,
+    io:format("blblblbl:~p~n", [Rest]),
     <<Hostname:L/binary-unit:8, Tail/binary>> = Rest,
     init_params(Tail, [{hostname, Hostname} | Acc]);
 %% Supported Address Types
@@ -153,10 +154,11 @@ init_params(<<12:16, Length:16, Rest/binary>>, Acc) ->
     case Length rem 4 of
         0 ->
             <<Value:16, Tail/binary>> = Rest,
-            init_params(Tail, [{address_type, AddressType(Value)} | Acc]);
+            init_params(Tail, [{address_types, [AddressType(Value)]} | Acc]);
         N ->
-            <<Value:16, _Padding:N/binary-unit:8, Tail/binary>> = Rest,
-            init_params(Tail, [{address_type, AddressType(Value)} | Acc])
+            L = Length - 4,
+            <<Types:L/binary-unit:8, _Pad:N/binary-unit:8, Tail/binary>> = Rest,
+            init_params(Tail, [{address_types, [AddressType(V) || <<V:16>> <= Types]} | Acc])
     end;
 %% Ignore ECN and Forward TSN parameters
 init_params(_, Acc) -> Acc.

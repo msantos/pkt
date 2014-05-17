@@ -9,6 +9,7 @@
 codec_test_() ->
     [
         sctp_init_chunk(),
+        sctp_init_chunk1(),
         sctp_init_ack_chunk(),
         sctp_cookie_echo_chunk(),
         sctp_cookie_ack_chunk(),
@@ -31,8 +32,28 @@ sctp_init_chunk() ->
                     #sctp_chunk_init{
                         itag = 2970287606,a_rwnd = 1500,outbound_streams = 5,
                         inbound_streams = 65535,tsn = 2961831077, params = [
-                            {address_type,ipv4},
+                            {address_types,[ipv4]},
                             {ipv4,{192,168,1,100}},
+                            {ipv4,{127,0,0,1}}
+                        ]
+                    }
+                }
+            ]
+        }, <<>>
+    },
+    ?_assertEqual(Result, pkt:sctp(Data)).
+
+%% Decode supported address types parameter with multiple values
+sctp_init_chunk1() ->
+    {ok, Data} = file:read_file(?SCTP_DATA_FILE("init1.raw")),
+    Result = {
+        #sctp{
+            sport = 41257,dport = 21,vtag = 0,sum = 308264958,chunks = [
+                #sctp_chunk{type = 1,flags = 0,len = 40, payload =
+                   #sctp_chunk_init{
+                        itag = 882595313,a_rwnd = 4294967295,outbound_streams = 1,
+                        inbound_streams = 1,tsn = 0, params = [
+                            {address_types,[ipv4,ipv6,hostname]},
                             {ipv4,{127,0,0,1}}
                         ]
                     }
