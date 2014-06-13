@@ -34,6 +34,7 @@
 
 -export([
         checksum/1,
+        build_checksum/1,
         decapsulate/1, decapsulate/2,
         decode/1, decode/2,
         makesum/1,
@@ -62,6 +63,7 @@
         tcp_options/1,
         udp/1,
         sctp/1,
+        verify_checksum/1,
         dlt/1, link_type/1
 ]).
 
@@ -369,10 +371,6 @@ checksum([#ipv4{
 ]) ->
     Len = IPLen - (HL * 4),
     PayloadLen = IPLen - ((HL * 4) + (Off * 4)),
-    Pad = case Len rem 2 of
-        0 -> 0;
-        1 -> 8
-    end,
     TCP = tcp(TCPhdr),
     checksum(
         <<SA1,SA2,SA3,SA4,
@@ -381,8 +379,7 @@ checksum([#ipv4{
           ?IPPROTO_TCP:8,
           Len:16,
           TCP/binary,
-          Payload:PayloadLen/binary,
-          0:Pad>>
+          Payload:PayloadLen/binary>>
     );
 
 % UDP pseudoheader checksum
@@ -396,10 +393,6 @@ checksum([#ipv4{
     Payload
 ]) ->
     UDP = udp(Hdr),
-    Pad = case Len rem 2 of
-        0 -> 0;
-        1 -> 8
-    end,
     checksum(
         <<SA1,SA2,SA3,SA4,
           DA1,DA2,DA3,DA4,
@@ -407,8 +400,7 @@ checksum([#ipv4{
           ?IPPROTO_UDP:8,
           Len:16,
           UDP/binary,
-          Payload/bits,
-          0:Pad>>
+          Payload/bits>>
     );
 
 checksum(#ipv4{} = H) ->
@@ -425,23 +417,42 @@ checksum([#ipv6{
 	  Payload
 	 ]) when Next == ?IPPROTO_TCP ->
     PayloadLen = IPLen - (Off * 4),
-    Pad = case PayloadLen rem 2 of
-	      0 -> 0;
-	      1 -> 8
-	  end,
-    %% calculation of the TCP header the checksum is set to 0
+    %% calculation of the TCP header
     TCP_Header = pkt:tcp(TCPhdr),
     pkt:checksum(
       <<
         %% calculation of the ipv6 pseudo header: rfc2460
 	SA1:16, SA2:16, SA3:16, SA4:16, SA5:16, SA6:16, SA7:16, SA8:16,
 	DA1:16, DA2:16, DA3:16, DA4:16, DA5:16, DA6:16, DA7:16, DA8:16,
-        IPLen:32, 
+        IPLen:32,
         0:24, Next:8,
         TCP_Header/binary,
         %% calculation of the padded payload
-	Payload:PayloadLen/binary,
-	0:Pad>>
+	Payload:PayloadLen/binary>>
+     );
+
+checksum([#ipv6{
+	     len = IPLen, next = Next,
+	     saddr = {SA1, SA2, SA3, SA4, SA5, SA6, SA7, SA8},
+	     daddr = {DA1, DA2, DA3, DA4, DA5, DA6, DA7, DA8}
+	    },
+	    #udp{
+            } = UDPhdr,
+	  Payload
+	 ]) when Next == ?IPPROTO_UDP ->
+    PayloadLen = IPLen - 8, % header offset for saddr, daddr is 8
+    %% calculation of the UDP header
+    UDP_Header = pkt:udp(UDPhdr),
+    pkt:checksum(
+      <<
+        %% calculation of the ipv6 pseudo header: rfc2460
+	SA1:16, SA2:16, SA3:16, SA4:16, SA5:16, SA6:16, SA7:16, SA8:16,
+	DA1:16, DA2:16, DA3:16, DA4:16, DA5:16, DA6:16, DA7:16, DA8:16,
+        IPLen:32,
+        0:24, Next:8,
+        UDP_Header/binary,
+        %% calculation of the padded payload
+	Payload:PayloadLen/binary>>
      );
 
 checksum(#ipv6{} = H) ->
@@ -507,5 +518,61 @@ foldWithOverflow16(A) ->
 			E
          end.
 
+
+makesum([IP, UDP, Payload]) when % handle UDP packets
+    (is_record(IP,ipv4) or is_record(IP,ipv6)) and is_record(UDP,udp)->
+    Sum = (checksum([IP, UDP, Payload]) bxor 16#FFFF) band 16#FFFF, % bitwise-complement
+    if
+      Sum == 0 -> 16#FFFF; % According RFC 6935 0x0000 checksum shall be replaced by 0xFFFF
+      true -> Sum
+    end;
+
 makesum(Hdr) ->
 	(checksum(Hdr) bxor 16#FFFF) band 16#FFFF. % bitwise-complement
+
+%%Note:
+%% - Checksum building for tunneled packets according to RFC 6936 is not supported
+%% - Jumbo packets are not supported
+%% - Extension headers are not supported
+
+build_checksum([#ipv4{} = IP, #tcp{} = TCP, Payload]) -> % handle IPv4 TCP packets
+    {ipv4_tcp, makesum(IP#ipv4{sum=0}), makesum([IP, TCP#tcp{sum = 0}, Payload])};
+
+build_checksum([#ipv6{} = IP, #tcp{} = TCP, Payload]) -> % handle IPv6 TCP packets
+    {ipv6_tcp, makesum([IP, TCP#tcp{sum = 0}, Payload])};
+
+build_checksum([#ipv4{} = IP, #udp{} = UDP, Payload]) -> % handle IPv4 UDP packets
+    {ipv4_udp, makesum(IP#ipv4{sum=0}), makesum([IP, UDP#udp{sum = 0}, Payload])};
+
+build_checksum([#ipv6{} = IP, #udp{} = UDP, Payload])-> % handle IPv6 UDP packets
+    {ipv6_udp, makesum([IP, UDP#udp{sum = 0}, Payload])}.
+
+
+verify_checksum([#ipv4{} = IP, #tcp{} = TCP, Payload]) -> % handle IPv4 TCP packets
+    build_checksum([IP, TCP, Payload]) == {ipv4_tcp, IP#ipv4.sum, TCP#tcp.sum};
+
+verify_checksum([#ipv6{} = IP, #tcp{} = TCP, Payload]) -> % handle IPv6 TCP packets
+    build_checksum([IP, TCP, Payload]) == {ipv6_tcp, TCP#tcp.sum};
+
+verify_checksum([#ipv4{} = IP, #udp{} = UDP, Payload]) -> % handle IPv4 UDP packets
+    if
+      UDP#udp.sum == 0 -> % for ipv4 the UDP checksum is optional. According RFC 6935, the UDP checksum shall be ignored, when set to 0x0000.
+        {ipv4_udp, IPv4sum, _} = build_checksum([IP, UDP, Payload]), % ignore UDP checksum, as UDP#udp.sum is 0
+        if 
+          IPv4sum == IP#ipv4.sum ->
+            true; % ok
+          true ->
+            false % checksum failure as IP4 checksum does not match
+        end;
+      true ->
+          build_checksum([IP, UDP, Payload]) == {ipv4_udp, IP#ipv4.sum, UDP#udp.sum}
+    end;
+
+verify_checksum([#ipv6{} = IP, #udp{} = UDP, Payload]) -> % handle IPv6 UDP packets
+    if
+      UDP#udp.sum == 0 ->
+        % for ipv6 the UDP packets, which contain the checksum 0x0000 are invalid according RFC 6935, they shall be discarded and an error shall be logged.
+        false; % Thus set checksum as invalid
+      true ->
+        build_checksum([IP, UDP, Payload]) == {ipv6_udp, UDP#udp.sum}
+    end.
