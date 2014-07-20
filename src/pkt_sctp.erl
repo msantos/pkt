@@ -150,15 +150,9 @@ init_params(<<12:16, Length:16, Rest/binary>>, Acc) ->
            (6) -> ipv6;
            (11) -> hostname
     end,
-    case Length rem 4 of
-        0 ->
-            <<Value:16, Tail/binary>> = Rest,
-            init_params(Tail, [{address_types, [AddressType(Value)]} | Acc]);
-        N ->
-            L = Length - 4,
-            <<Types:L/binary-unit:8, _Pad:N/binary-unit:8, Tail/binary>> = Rest,
-            init_params(Tail, [{address_types, [AddressType(V) || <<V:16>> <= Types]} | Acc])
-    end;
+    L = Length - 4,
+    <<Types:L/binary-unit:8, Tail/binary>> = Rest,
+    init_params(Tail, [{address_types, [AddressType(V) || <<V:16>> <= Types]} | Acc]);
 %% Ignore ECN and Forward TSN parameters
 init_params(_, Acc) -> Acc.
 
