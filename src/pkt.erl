@@ -349,9 +349,15 @@ proto(N) ->
 ipproto(N) ->
     pkt_ipproto:codec(N).
 
-%% Protocol families
+%% Protocol families: BSD NULL (loopback) linktype
 family(?PF_INET) -> ipv4;
-family(?PF_INET6) -> ipv6.
+family(Family) ->
+    case {os:type(), Family} of
+        {{unix,darwin}, 30} -> inet6;
+        {{unix,freebsd}, 28} -> inet6;
+        {{unix,netbsd}, 24} -> inet6;
+        {{unix,openbsd}, 24} -> inet6
+    end.
 
 %%
 %% Utility functions
