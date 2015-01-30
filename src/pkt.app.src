@@ -1,5 +1,5 @@
 {application, pkt, [
     {description, "Network packet parsing library"},
-    {vsn, "0.4.3"},
+    {vsn, "0.4.4"},
     {applications, [kernel, stdlib]}
 ]}.
