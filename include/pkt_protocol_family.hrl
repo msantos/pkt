@@ -10,9 +10,3 @@
 -ifndef(PF_INET).
 -define(PF_INET, 2).                        % IP protocol family.
 -endif.
--ifndef(PF_INET6).
--define(PF_INET6, 10).                      % IP version 6.
--endif.
--ifndef(PF_PACKET).
--define(PF_PACKET, 17).                     % Packet family.
--endif.
