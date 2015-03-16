@@ -43,6 +43,7 @@
         '802.1q'/1,
         llc/1,
         arp/1,
+        lldp/1,
         null/1,
         gre/1,
         linux_cooked/1,
@@ -136,6 +137,9 @@ decapsulate_next({gre, Data}, Headers) ->
 % Upper layer: data follows header
 decapsulate_next({arp, Data}, Headers) ->
     {Header, Payload} = arp(Data),
+    lists:reverse([Payload, Header|Headers]);
+decapsulate_next({lldp, Data}, Headers) ->
+    {Header, Payload} = lldp(Data),
     lists:reverse([Payload, Header|Headers]);
 decapsulate_next({tcp, Data}, Headers) ->
     {Header, Payload} = tcp(Data),
@@ -272,6 +276,10 @@ ether_type(N) ->
 %% ARP
 arp(N) ->
     pkt_arp:codec(N).
+
+%% LLDP
+lldp(N) ->
+    pkt_lldp:codec(N).
 
 llc(N) ->
     pkt_llc:codec(N).
@@ -564,7 +572,7 @@ verify_checksum([#ipv4{} = IP, #udp{} = UDP, Payload]) -> % handle IPv4 UDP pack
     if
       UDP#udp.sum == 0 -> % for ipv4 the UDP checksum is optional. According RFC 6935, the UDP checksum shall be ignored, when set to 0x0000.
         {ipv4_udp, IPv4sum, _} = build_checksum([IP, UDP, Payload]), % ignore UDP checksum, as UDP#udp.sum is 0
-        if 
+        if
           IPv4sum == IP#ipv4.sum ->
             true; % ok
           true ->
