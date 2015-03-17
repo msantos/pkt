@@ -37,6 +37,7 @@
 type(?ETH_P_IP) -> ipv4;
 type(?ETH_P_IPV6) -> ipv6;
 type(?ETH_P_ARP) -> arp;
+type(?ETH_P_LLDP) -> lldp;
 %% IEEE 802.3 Ethernet
 type(EtherType) when EtherType < 16#05DC -> llc;
 %% 802.1Q Virtual LAN
