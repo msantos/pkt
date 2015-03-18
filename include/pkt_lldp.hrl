@@ -101,8 +101,26 @@
 
 -define(SYSTEM_CAPABILITY, 7).
 
--record(system_capability, { system = 0 :: non_neg_integer(),
-                             enabled = 0 :: non_neg_integer() }).
+-type capability_flag() :: other
+                         | repeater
+                         | bridge
+                         | wlan_access_point
+                         | router
+                         | telephone
+                         | docsis
+                         | station_only.
+
+-define(SYSTEM_CAP_OTHER,     1 bsl 0).
+-define(SYSTEM_CAP_REPEATER,  1 bsl 1).
+-define(SYSTEM_CAP_BRIDGE,    1 bsl 2).
+-define(SYSTEM_CAP_WLANAP,    1 bsl 3).
+-define(SYSTEM_CAP_ROUTER,    1 bsl 4).
+-define(SYSTEM_CAP_TELEPHONE, 1 bsl 5).
+-define(SYSTEM_CAP_DOCSIS,    1 bsl 6).
+-define(SYSTEM_CAP_STATION,   1 bsl 7).
+
+-record(system_capability, { system  = [] :: [capability_flag()],
+                             enabled = [] :: [capability_flag()] }).
 -type system_capability() :: #system_capability{}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

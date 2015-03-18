@@ -30,18 +30,20 @@ decode(<<?TTL:7, Length:9, Tail/bytes>>, Acc) ->
     decode(Rest, [Pdu | Acc]);
 decode(<<?PORT_DESC:7, Length:9,
          Value:Length/bytes, Rest/bytes>>, Acc) ->
-    Pdu = #port_desc{ value = Value },
+    Pdu = #port_desc{ value = decode_string(Value) },
     decode(Rest, [Pdu | Acc]);
 decode(<<?SYSTEM_NAME:7, Length:9,
          Value:Length/bytes, Rest/bytes>>, Acc) ->
-    Pdu = #system_name{ value = Value },
+    Pdu = #system_name{ value = decode_string(Value) },
     decode(Rest, [Pdu | Acc]);
 decode(<<?SYSTEM_DESC:7, Length:9,
          Value:Length/bytes, Rest/bytes>>, Acc) ->
-    Pdu = #system_desc{ value = Value },
+    Pdu = #system_desc{ value = decode_string(Value) },
     decode(Rest, [Pdu | Acc]);
 decode(<<?SYSTEM_CAPABILITY:7, _Length:9, Tail/bytes>>, Acc) ->
-    <<System:16, Enabled:16, Rest/bytes>> = Tail,
+    <<SystemBin:16/bits, EnabledBin:16/bits, Rest/bytes>> = Tail,
+    System = binary_to_flags(system_capability, SystemBin),
+    Enabled = binary_to_flags(system_capability, EnabledBin),
     Pdu = #system_capability{ system = System,
                               enabled = Enabled },
     decode(Rest, [Pdu | Acc]);
@@ -72,17 +74,22 @@ encode_pdu(#port_id{ subtype = SubType, value = Value }) ->
 encode_pdu(#ttl{ value = Value }) ->
     <<?TTL:7, 2:9, Value:16>>;
 encode_pdu(#port_desc{ value = Value }) ->
-    Length = byte_size(Value),
-    <<?PORT_DESC:7, Length:9, Value:Length/bytes>>;
+    Value2 = encode_string(Value),
+    Length = byte_size(Value2),
+    <<?PORT_DESC:7, Length:9, Value2:Length/bytes>>;
 encode_pdu(#system_name{ value = Value }) ->
-    Length = byte_size(Value),
-    <<?SYSTEM_NAME:7, Length:9, Value:Length/bytes>>;
+    Value2 = encode_string(Value),
+    Length = byte_size(Value2),
+    <<?SYSTEM_NAME:7, Length:9, Value2:Length/bytes>>;
 encode_pdu(#system_desc{ value = Value }) ->
-    Length = byte_size(Value),
-    <<?SYSTEM_DESC:7, Length:9, Value:Length/bytes>>;
+    Value2 = encode_string(Value),
+    Length = byte_size(Value2),
+    <<?SYSTEM_DESC:7, Length:9, Value2:Length/bytes>>;
 encode_pdu(#system_capability{ system = System,
                                enabled = Enabled }) ->
-    Value = <<System:16, Enabled:16>>,
+    SystemBin = flags_to_binary(system_capability, System, 16),
+    EnabledBin = flags_to_binary(system_capability, Enabled, 16),
+    Value = <<SystemBin:2/bytes, EnabledBin:2/bytes>>,
     <<?SYSTEM_CAPABILITY:7, 4:9, Value:4/bytes>>;
 encode_pdu(#management_address{ value = Value }) ->
     Length = byte_size(Value),
@@ -121,6 +128,46 @@ map(port_id, interface_name)   -> ?PORT_ID_IFNAME;
 map(port_id, agent_circuit_id) -> ?PORT_ID_AGENT_CIRC_ID;
 map(port_id, locally_assigned) -> ?PORT_ID_LOCALLY.
 
+% Encode Bitmap flags
+flags_to_binary(Type, Flags, BitSize) ->
+    flags_to_binary(Type, Flags, BitSize, <<0:BitSize>>).
+
+flags_to_binary(_, [], _, Binary) -> Binary;
+flags_to_binary(Type, [Flag | Rest], BitSize, Binary) ->
+    <<FlagsInt:BitSize>> = Binary,
+    FlagInt = proplists:get_value(Flag, enums(Type)),
+    FlagsInt2 = FlagsInt bor FlagInt,
+    flags_to_binary(Type, Rest, BitSize, <<FlagsInt2:BitSize>>).
+
+% Decode Bitmap Flags
+binary_to_flags(Type, Binary) ->
+    BitSize = bit_size(Binary),
+    <<FlagsInt:BitSize>> = Binary,
+    Keys = proplists:get_keys(enums(Type)),
+    binary_to_flags(Type, FlagsInt, Keys, []).
+
+binary_to_flags(_, _, [], Flags) -> lists:reverse(Flags);
+binary_to_flags(Type, FlagsInt, [Flag | Rest], Flags) ->
+    FlagInt = proplists:get_value(Flag, enums(Type)),
+    case 0 /= FlagInt band FlagsInt of
+        true ->
+            binary_to_flags(Type, FlagsInt, Rest, [Flag | Flags]);
+        false ->
+            binary_to_flags(Type, FlagsInt, Rest, Flags)
+    end.
+
+% system capability enums
+enums(system_capability) ->
+    [{ other,             ?SYSTEM_CAP_OTHER },
+     { repeater,          ?SYSTEM_CAP_REPEATER },
+     { bridge,            ?SYSTEM_CAP_BRIDGE },
+     { wlan_access_point, ?SYSTEM_CAP_WLANAP },
+     { router,            ?SYSTEM_CAP_ROUTER },
+     { telephone,         ?SYSTEM_CAP_TELEPHONE },
+     { docsis,            ?SYSTEM_CAP_DOCSIS },
+     { station_only,      ?SYSTEM_CAP_STATION }].
+
+% padding binary to byte length
 pad_to(ByteLen, Binary) ->
     BinLength = byte_size(Binary),
     case ByteLen > BinLength of
@@ -130,3 +177,16 @@ pad_to(ByteLen, Binary) ->
         false ->
             Binary
     end.
+
+decode_string(Binary) ->
+    decode_string(Binary, byte_size(Binary) - 1).
+
+decode_string(Binary, Size) when Size >= 0 ->
+    case binary:at(Binary, Size) of
+        0 -> decode_string(Binary, Size - 1);
+        _ -> binary:part(Binary, 0, Size + 1)
+    end;
+decode_string(_, _) ->
+    <<>>.
+
+encode_string(Binary) -> <<Binary/bytes, 0:8>>.
