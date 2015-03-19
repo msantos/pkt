@@ -9,7 +9,7 @@ codec(Binary) when is_binary(Binary) -> { decode(Binary, []), <<>> };
 codec(#lldp{ pdus = Pdus }) -> pad_to(50, encode(Pdus, <<>>)).
 
 decode(<<?END_OF_LLDPDU:7, 0:9, _Tail/bytes>>, Acc) ->
-    Acc2 = [#end_of_lldpdu{} | Acc],
+    Acc2 = [end_of_lldpdu | Acc],
     #lldp{ pdus = lists:reverse(Acc2) };
 decode(<<?CHASSIS_ID:7, Length:9, SubTypeInt:8, Tail/bytes>>, Acc) ->
     ValueLen = Length - 1,
@@ -61,7 +61,7 @@ encode([Pdu | Rest], Binary) ->
     PduBin = encode_pdu(Pdu),
     encode(Rest, <<Binary/bytes, PduBin/bytes>>).
 
-encode_pdu(#end_of_lldpdu{}) ->
+encode_pdu(end_of_lldpdu) ->
     <<?END_OF_LLDPDU:7, 0:9>>;
 encode_pdu(#chassis_id{ subtype = SubType, value = Value }) ->
     SubTypeInt = map(chassis_id, SubType),
