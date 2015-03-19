@@ -4,8 +4,7 @@
 
 -define(END_OF_LLDPDU, 0).
 
--record(end_of_lldpdu, {}).
--type end_of_lldpdu() :: #end_of_lldpdu{}.
+-type end_of_lldpdu() :: end_of_lldpdu.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Chassis Id

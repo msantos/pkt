@@ -61,7 +61,7 @@ decode() ->
                            {organizationally_specific,<<0,128,194,3,1,232,16,118,
                                                         50,45,48,52,56,56,45,48,51,45,48, 53,48,53,0>>},
                            {organizationally_specific,<<0,128,194,4,0>>},
-                           {end_of_lldpdu}]}, <<>>},
+                           end_of_lldpdu]}, <<>>},
                   pkt:lldp(packet())).
 
 encode() ->
