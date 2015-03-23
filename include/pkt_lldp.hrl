@@ -145,6 +145,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 -type pdu() :: chassis_id()
+             | end_of_lldpdu()
              | port_id()
              | ttl()
              | port_desc()
