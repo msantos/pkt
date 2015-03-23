@@ -99,13 +99,13 @@ encode_pdu(#organizationally_specific{ value = Value }) ->
     <<?ORGANIZATIONALLY_SPECIFIC:7, Length:9, Value:Length/bytes>>.
 
 % ChassisID SubTypes
-map(chassis_id, ?CHASSIS_ID_IFAlias) -> inteface_alias;
+map(chassis_id, ?CHASSIS_ID_IFAlias) -> interface_alias;
 map(chassis_id, ?CHASSIS_ID_PORT)    -> port_component;
 map(chassis_id, ?CHASSIS_ID_MAC)     -> mac_address;
 map(chassis_id, ?CHASSIS_ID_NW)      -> network_address;
 map(chassis_id, ?CHASSIS_ID_IFNAME)  -> interface_name;
 map(chassis_id, ?CHASSIS_ID_LOCALLY) -> locally_assigned;
-map(chassis_id, inteface_alias)   -> ?CHASSIS_ID_IFAlias;
+map(chassis_id, interface_alias)  -> ?CHASSIS_ID_IFAlias;
 map(chassis_id, port_component)   -> ?CHASSIS_ID_PORT;
 map(chassis_id, mac_address)      -> ?CHASSIS_ID_MAC;
 map(chassis_id, network_address)  -> ?CHASSIS_ID_NW;
