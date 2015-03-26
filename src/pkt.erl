@@ -68,6 +68,24 @@
         dlt/1, link_type/1
 ]).
 
+-type bit() :: 0 .. 1.
+-type in_port_t() :: 0 .. 16#ffff.
+-type nibble() :: 0 .. 16#ff.
+-type uint16_t() :: 0 .. 16#ffff.
+-type uint32_t() :: 0 .. 16#ffffffff.
+-type in_addr() :: {byte(),byte(),byte(),byte()}.
+-type in6_addr() :: {uint16_t(),uint16_t(),uint16_t(),uint16_t(),uint16_t(),uint16_t(),uint16_t(),uint16_t()}.
+
+-export_type([
+        bit/0,
+        in6_addr/0,
+        in_addr/0,
+        in_port_t/0,
+        nibble/0,
+        uint16_t/0,
+        uint32_t/0
+    ]).
+
 % For integers, assume a whole frame and check the datalink type.
 %
 % Atoms can indicate any protocol type.
