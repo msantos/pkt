@@ -10,15 +10,15 @@
 -define(ARPOP_NAK, 10).                     % (ATM)ARP NAK
 
 -record(arp, {
-        hrd = ?ARPHRD_ETHER,
-        pro = ?ETH_P_IP,
-        hln = 6,
-        pln = 4,
-        op = ?ARPOP_REPLY,
+        hrd = ?ARPHRD_ETHER :: pkt:uint16_t(),
+        pro = ?ETH_P_IP :: pkt:uint16_t(),
+        hln = 6 :: byte(),
+        pln = 4 :: byte(),
+        op = ?ARPOP_REPLY :: pkt:uint16_t(),
 
-        sha = <<0,0,0,0,0,0>>,
-        sip = {127,0,0,1},
+        sha = <<0,0,0,0,0,0>> :: <<_:48>>,
+        sip = {127,0,0,1} :: pkt:in_addr(),
 
-        tha = <<0,0,0,0,0,0>>,
-        tip = {127,0,0,1}
+        tha = <<0,0,0,0,0,0>> :: <<_:48>>,
+        tip = {127,0,0,1} :: pkt:in_addr()
     }).
