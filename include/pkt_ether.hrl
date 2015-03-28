@@ -6,8 +6,8 @@
 -define(ETH_P_LLDP, 16#88CC).
 
 -record(ether, {
-    dhost = <<0,0,0,0,0,0>>,
-    shost = <<0,0,0,0,0,0>>,
-    type = ?ETH_P_IP,
-    crc = 0
+    dhost = <<0,0,0,0,0,0>> :: <<_:48>>,
+    shost = <<0,0,0,0,0,0>> :: <<_:48>>,
+    type = ?ETH_P_IP :: pkt:uint16_t(),
+    crc = 0 :: pkt:nibble()
 }).
