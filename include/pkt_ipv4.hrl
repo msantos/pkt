@@ -1,7 +1,7 @@
 -record(ipv4, {
-        v = 4, hl = 5, tos = 0, len = 20,
-        id = 0, df = 0, mf = 0,
-        off = 0, ttl = 64, p = ?IPPROTO_TCP, sum = 0,
-        saddr = {127,0,0,1}, daddr = {127,0,0,1},
-        opt = <<>>
+        v = 4 :: pkt:nibble(), hl = 5 :: pkt:nibble(), tos = 0 :: pkt:byte(), len = 20 :: pkt:uint16_t(),
+        id = 0 :: pkt:uint16_t(), df = 0 :: pkt:bit(), mf = 0 :: pkt:bit(),
+        off = 0 :: 0 .. 2#1111111111111, ttl = 64 :: pkt:byte(), p = ?IPPROTO_TCP :: pkt:byte(), sum = 0 :: pkt:uint16_t(),
+        saddr = {127,0,0,1} :: pkt:in_addr(), daddr = {127,0,0,1} :: pkt:in_addr(),
+        opt = <<>> :: binary()
     }).
