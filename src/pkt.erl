@@ -70,7 +70,7 @@
 
 -type bit() :: 0 .. 1.
 -type in_port_t() :: 0 .. 16#ffff.
--type nibble() :: 0 .. 16#ff.
+-type nibble() :: 0 .. 2#1111.
 -type uint16_t() :: 0 .. 16#ffff.
 -type uint32_t() :: 0 .. 16#ffffffff.
 -type in_addr() :: {byte(),byte(),byte(),byte()}.
