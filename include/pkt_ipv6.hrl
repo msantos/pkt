@@ -1,7 +1,7 @@
 %% RFC 2460: IPv6 Specification
 -record(ipv6, {
-        v = 6 :: pkt:nibble(), class = 0 :: byte(), flow = 0 :: 0 .. 2#11111111111111111111,
-        len = 40 :: pkt:uint16_t(), next = ?IPPROTO_TCP :: byte(), hop = 0 :: byte(),
+        v = 6 :: pkt:bit4(), class = 0 :: pkt:uint8_t(), flow = 0 :: 0 .. 2#11111111111111111111,
+        len = 40 :: pkt:uint16_t(), next = ?IPPROTO_TCP :: pkt:uint8_t(), hop = 0 :: pkt:uint8_t(),
         saddr :: pkt:in6_addr(), daddr :: pkt:in6_addr()
     }).
 
@@ -13,22 +13,22 @@
 
 % Hop-by-Hop Options Header
 -record(ipv6_hopopts, {
-        next = ?IPPROTO_NONE :: byte(),
-        len = 0 :: byte(),
+        next = ?IPPROTO_NONE :: pkt:uint8_t(),
+        len = 0 :: pkt:uint8_t(),
         opt = <<>> :: binary()
     }).
 
 -record(ipv6_routing, {
-        next = ?IPPROTO_NONE :: byte(),
-        len = 0 :: byte(),
-        type = 0 :: byte(),
-        left = 0 :: byte(),
+        next = ?IPPROTO_NONE :: pkt:uint8_t(),
+        len = 0 :: pkt:uint8_t(),
+        type = 0 :: pkt:uint8_t(),
+        left = 0 :: pkt:uint8_t(),
         data = <<>> :: binary()
     }).
 
 -record(ipv6_fragment, {
-        next = ?IPPROTO_NONE :: byte(),
-        res = 0 :: byte(),
+        next = ?IPPROTO_NONE :: pkt:uint8_t(),
+        res = 0 :: pkt:uint8_t(),
         off = 0 :: 0 .. 2#1111111111111,
         res2 = 0 :: 0 .. 3,
         m = 0 :: pkt:bit(),
@@ -42,8 +42,8 @@
     }).
 
 -record(ipv6_ah, {
-        next = ?IPPROTO_NONE :: byte(),
-        len = 0 :: byte(),
+        next = ?IPPROTO_NONE :: pkt:uint8_t(),
+        len = 0 :: pkt:uint8_t(),
         res = 0 :: pkt:uint16_t(),
         spi = 0 :: pkt:uint32_t(),
         seq = 0 :: pkt:uint32_t(),
@@ -55,7 +55,7 @@
         seq = 0 :: pkt:uint32_t(),
         data = <<>> :: binary(),
         pad = <<>> :: binary(),
-        padlen = 0 :: byte(),
-        next = 0 :: byte(),
+        padlen = 0 :: pkt:uint8_t(),
+        next = 0 :: pkt:uint8_t(),
         icv = <<>> :: binary()
     }).

@@ -12,8 +12,8 @@
 -record(arp, {
         hrd = ?ARPHRD_ETHER :: pkt:uint16_t(),
         pro = ?ETH_P_IP :: pkt:uint16_t(),
-        hln = 6 :: byte(),
-        pln = 4 :: byte(),
+        hln = 6 :: pkt:uint8_t(),
+        pln = 4 :: pkt:uint8_t(),
         op = ?ARPOP_REPLY :: pkt:uint16_t(),
 
         sha = <<0,0,0,0,0,0>> :: <<_:48>>,

@@ -9,5 +9,5 @@
     dhost = <<0,0,0,0,0,0>> :: <<_:48>>,
     shost = <<0,0,0,0,0,0>> :: <<_:48>>,
     type = ?ETH_P_IP :: pkt:uint16_t(),
-    crc = 0 :: pkt:nibble()
+    crc = 0 :: pkt:bit4()
 }).

@@ -70,10 +70,11 @@
 
 -type bit() :: 0 .. 1.
 -type in_port_t() :: 0 .. 16#ffff.
--type nibble() :: 0 .. 2#1111.
+-type bit4() :: 0 .. 2#1111.
+-type uint8_t() :: 0..16#ff.
 -type uint16_t() :: 0 .. 16#ffff.
 -type uint32_t() :: 0 .. 16#ffffffff.
--type in_addr() :: {byte(),byte(),byte(),byte()}.
+-type in_addr() :: {uint8_t(),uint8_t(),uint8_t(),uint8_t()}.
 -type in6_addr() :: {uint16_t(),uint16_t(),uint16_t(),uint16_t(),uint16_t(),uint16_t(),uint16_t(),uint16_t()}.
 
 -export_type([
@@ -81,7 +82,8 @@
         in6_addr/0,
         in_addr/0,
         in_port_t/0,
-        nibble/0,
+        bit4/0,
+        uint8_t/0,
         uint16_t/0,
         uint32_t/0
     ]).
