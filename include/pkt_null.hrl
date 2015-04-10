@@ -1,3 +1,3 @@
 -record(null, {
-        family = ?PF_INET
+        family = ?PF_INET :: pkt:uint32_t()
     }).
