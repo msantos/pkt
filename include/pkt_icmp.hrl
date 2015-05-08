@@ -25,11 +25,11 @@
 -define(ICMP_ADDRESSREPLY, 18).
 
 -record(icmp, {
-        type = ?ICMP_ECHO, code = 0, checksum = 0,
-        id = 0, sequence = 0,
-        gateway = {127,0,0,1},
-        un = <<0:32>>,
-        mtu = 0,
-        pointer = 0,
-        ts_orig = 0, ts_recv = 0, ts_tx = 0
+        type = ?ICMP_ECHO :: pkt:uint8_t(), code = 0 :: pkt:uint8_t(), checksum = 0 :: pkt:uint16_t(),
+        id = 0 :: pkt:uint16_t(), sequence = 0 :: pkt:uint16_t(),
+        gateway = {127,0,0,1} :: pkt:in_addr(),
+        un = <<0:32>> :: binary(),
+        mtu = 0 :: pkt:uint16_t(),
+        pointer = 0 :: pkt:uint8_t(),
+        ts_orig = 0 :: pkt:uint32_t(), ts_recv = 0 :: pkt:uint32_t(), ts_tx = 0 :: pkt:uint32_t()
     }).

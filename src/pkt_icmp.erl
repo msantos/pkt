@@ -127,9 +127,9 @@ codec(#icmp{
     <<Type:8, Code:8, Checksum:16, Id:16, Sequence:16>>;
 
 % Catch/build arbitrary types
-codec(<<Type:8, Code:8, Checksum:16, Un:32, Payload/binary>>) ->
+codec(<<Type:8, Code:8, Checksum:16, Un:32/bits, Payload/binary>>) ->
     {#icmp{
         type = Type, code = Code, checksum = Checksum, un = Un
     }, Payload};
 codec(#icmp{type = Type, code = Code, checksum = Checksum, un = Un}) ->
-    <<Type:8, Code:8, Checksum:16, Un:32>>.
+    <<Type:8, Code:8, Checksum:16, Un:32/bits>>.
