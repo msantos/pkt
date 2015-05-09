@@ -29,27 +29,27 @@
 -define(ND_REDIRECT, 137).
 
 -record(icmp6, {
-        type = ?ICMP6_ECHO_REQUEST, code = 0, checksum = 0,
+        type = ?ICMP6_ECHO_REQUEST :: pkt:uint8_t(), code = 0 :: pkt:uint8_t(), checksum = 0 :: pkt:uint16_t(),
 
-        un = <<0:32>>,
-        pptr = 0,
-        mtu = 0,
-        id = 0,
-        seq = 0,
-        maxdelay = 0,
+        un = <<0:32>> :: <<_:32>>,
+        pptr = 0 :: pkt:uint32_t(),
+        mtu = 0 :: pkt:uint32_t(),
+        id = 0 :: pkt:uint16_t(),
+        seq = 0 :: pkt:uint16_t(),
+        maxdelay = 0 :: pkt:uint16_t(),
 
-        res = 0, res2 = 0,
+        res = 0 :: pkt:uint16_t(), res2 = 0 :: pkt:uint16_t(),
 
-        saddr,
-        daddr,
+        saddr :: pkt:in6_addr(),
+        daddr :: pkt:in6_addr(),
 
         % router advertisement
-        hop = 0, m = 0, o = 0, lifetime = 0, reach = 0, retrans = 0,
+        hop = 0 :: pkt:uint8_t(), m = 0 :: pkt:bit(), o = 0 :: pkt:bit(), lifetime = 0 :: pkt:uint16_t(), reach = 0 :: pkt:uint32_t(), retrans = 0 :: pkt:uint32_t(),
 
         % Neighbor Advertisement Message
-        r = 0, s = 0,
+        r = 0 :: pkt:bit(), s = 0 :: pkt:bit(),
 
         % Multicast Listener Discovery (MLD)
         % use daddr for the multicast address
-        delay = 0
+        delay = 0 :: pkt:uint16_t()
     }).
