@@ -46,7 +46,7 @@ codec(<<SPort:16, DPort:16, VTag:32, Sum:32, Payload/binary>>) ->
 %% Internal functions
 
 decode_chunks(<<>>, Acc) -> {Acc, <<>>};
-decode_chunks(<<Type:8, Flags:8, Length:16, Rest/binary>>, Acc) ->
+decode_chunks(<<Type:8, Flags:8, Length:16, Rest/binary>>, Acc) when Length /= 0 ->
     {L, Pad} = case Length rem 4 of
         0 -> % No padding bytes
             {Length - 4, 0};
