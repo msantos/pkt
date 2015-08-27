@@ -45,7 +45,6 @@ codec(<<SPort:16, DPort:16, VTag:32, Sum:32, Payload/binary>>) ->
 
 %% Internal functions
 
-decode_chunks(<<>>, Acc) -> {Acc, <<>>};
 decode_chunks(<<Type:8, Flags:8, Length:16, Rest/binary>>, Acc) when Length /= 0 ->
     {L, Pad} = case Length rem 4 of
         0 -> % No padding bytes
@@ -55,6 +54,7 @@ decode_chunks(<<Type:8, Flags:8, Length:16, Rest/binary>>, Acc) when Length /= 0
     end,
     <<Payload:L/binary-unit:8, _:Pad, Tail/binary>> = Rest,
     decode_chunks(Tail, [chunk(Type, Flags, Length, Payload) | Acc]);
+decode_chunks(<<>>, Acc) -> {Acc, <<>>};
 %% Ignore other bytes which are not SCTP chunks (VSS, ...)
 decode_chunks(Other, Acc) -> {Acc, Other}.
 
@@ -116,8 +116,6 @@ chunk_payload(?SCTP_CHUNK_ABORT, Errors) ->
 chunk_payload(_, Data) ->
 	Data.
 
-init_params(<<>>, Acc) -> Acc;
-
 %% IPv4 Address Parameter
 init_params(<<5:16, 8:16, A:8, B:8, C:8, D:8, Rest/binary>>, Acc) ->
     init_params(Rest, [{ipv4, {A, B, C, D}} | Acc]);
@@ -153,15 +151,15 @@ init_params(<<12:16, Length:16, Rest/binary>>, Acc) ->
     L = Length - 4,
     <<Types:L/binary-unit:8, Tail/binary>> = Rest,
     init_params(Tail, [{address_types, [AddressType(V) || <<V:16>> <= Types]} | Acc]);
+init_params(<<>>, Acc) -> Acc;
 %% Ignore ECN and Forward TSN parameters
 init_params(_, Acc) -> Acc.
 
-error_causes(<<>>, Acc) ->
-    Acc;
 error_causes(<<Code:16, Length:16, Rest/binary>>, Acc) ->
     L = Length - 4,
     <<Opts:L/binary-unit:8, Tail/binary>> = Rest,
-    error_causes(Tail, [sctp_error(Code, L, Opts) | Acc]).
+    error_causes(Tail, [sctp_error(Code, L, Opts) | Acc]);
+error_causes(<<>>, Acc) -> Acc.
 
 sctp_error(1, _Length, <<Ident:16, _Reserved:8>>) ->
     #sctp_error_cause{
