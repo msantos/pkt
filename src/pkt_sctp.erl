@@ -38,8 +38,11 @@
 codec(<<SPort:16, DPort:16, VTag:32, Sum:32, Payload/binary>>) ->
     {Chunks, Other} = decode_chunks(Payload, []),
     SCTP = #sctp{
-        sport = SPort, dport = DPort, vtag = VTag,
-        sum = Sum, chunks = Chunks
+        sport = SPort,
+        dport = DPort,
+        vtag = VTag,
+        sum = Sum,
+        chunks = lists:reverse(Chunks)
     },
     {SCTP, Other}.
 
