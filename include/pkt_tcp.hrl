@@ -4,6 +4,7 @@
     seqno = 0 :: pkt:uint32_t(),
     ackno = 0 :: pkt:uint32_t(),
     off = 5 :: pkt:bit4(),
+    ns  = 0 :: pkt:bit(),
     cwr = 0 :: pkt:bit(),
     ece = 0 :: pkt:bit(),
     urg = 0 :: pkt:bit(),

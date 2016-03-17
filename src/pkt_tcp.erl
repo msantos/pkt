@@ -41,7 +41,7 @@ codec(
     <<SPort:16, DPort:16,
       SeqNo:32,
       AckNo:32,
-      Off:4, 0:4, CWR:1, ECE:1, URG:1, ACK:1,
+      Off:4, 0:3, NS:1, CWR:1, ECE:1, URG:1, ACK:1,
       PSH:1, RST:1, SYN:1, FIN:1, Win:16,
       Sum:16, Urp:16,
       Rest/binary>>
@@ -52,7 +52,7 @@ codec(
         sport = SPort, dport = DPort,
         seqno = SeqNo,
         ackno = AckNo,
-        off = Off, cwr = CWR, ece = ECE, urg = URG, ack = ACK,
+        off = Off, ns = NS, cwr = CWR, ece = ECE, urg = URG, ack = ACK,
         psh = PSH, rst = RST, syn = SYN, fin = FIN, win = Win,
         sum = Sum, urp = Urp,
         opt = Opt
@@ -61,7 +61,7 @@ codec(#tcp{
         sport = SPort, dport = DPort,
         seqno = SeqNo,
         ackno = AckNo,
-        off = Off, cwr = CWR, ece = ECE, urg = URG, ack = ACK,
+        off = Off, ns = NS, cwr = CWR, ece = ECE, urg = URG, ack = ACK,
         psh = PSH, rst = RST, syn = SYN, fin = FIN, win = Win,
         sum = Sum, urp = Urp,
         opt = Opt
@@ -70,7 +70,7 @@ codec(#tcp{
     <<SPort:16, DPort:16,
       SeqNo:32,
       AckNo:32,
-      Off:4, 0:4, CWR:1, ECE:1, URG:1, ACK:1,
+      Off:4, 0:3, NS:1, CWR:1, ECE:1, URG:1, ACK:1,
       PSH:1, RST:1, SYN:1, FIN:1, Win:16,
       Sum:16, Urp:16,
       Opt/binary, 0:Pad>>.
