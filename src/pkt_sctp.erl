@@ -164,61 +164,19 @@ init_params(_, Acc) -> Acc.
 error_causes(<<Code:16, Length:16, Rest/binary>>, Acc) ->
     L = Length - 4,
     <<Opts:L/binary-unit:8, Tail/binary>> = Rest,
-    error_causes(Tail, [sctp_error(Code, L, Opts) | Acc]);
+    Error = #sctp_error_cause{
+        code = Code,
+        descr = gen_sctp:error_string(Code),
+        opts = sctp_error(Code, L, Opts)
+    },
+    error_causes(Tail, [Error | Acc]);
 error_causes(<<>>, Acc) -> Acc.
 
 sctp_error(1, _Length, <<Ident:16, _Reserved:8>>) ->
-    #sctp_error_cause{
-        code = 1,
-        descr = format_error(1),
-        opts = [
-            {stream_identifier, Ident}
-        ]
-    };
+    [{stream_identifier, Ident}];
 sctp_error(12, Length, Opts) ->
     <<Reason:Length/binary-unit:8>> = Opts,
-    #sctp_error_cause{
-        code = 12,
-        descr = format_error(12),
-        opts = [
-            {abort_reason, Reason}
-        ]
-    };
+    [{abort_reason, Reason}];
 %% FIXME: add more error causes
-sctp_error(Code, _Length, Opts) ->
-    #sctp_error_cause{
-        code = Code,
-        descr = format_error(Code),
-        opts = [
-            {data, Opts}
-        ]
-    }.
-
-%% TODO: Replace this by using gen_sctp:error_string/1
-%% Full all of errors were added since R16B03
-format_error(1) ->
-    "Invalid Stream Identifier";
-format_error(2) ->
-    "Missing Mandatory Parameter";
-format_error(3) ->
-    "Stale Cookie Error";
-format_error(4) ->
-    "Out of Resource";
-format_error(5) ->
-    "Unresolvable Address";
-format_error(6) ->
-    "Unrecognized Chunk Type";
-format_error(7) ->
-    "Invalid Mandatory Parameter";
-format_error(8) ->
-    "Unrecognized Parameters";
-format_error(9) ->
-    "No User Data";
-format_error(10) ->
-    "Cookie Received While Shutting Down";
-format_error(11) ->
-    "Restart of an Association with New Addresses";
-format_error(12) ->
-    "User Initiated Abort";
-format_error(13) ->
-    "Protocol Violation".
+sctp_error(_Code, _Length, Opts) ->
+    [{data, Opts}].
