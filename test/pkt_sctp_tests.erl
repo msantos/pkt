@@ -28,7 +28,7 @@ sctp_init_chunk() ->
     Result = {
         #sctp{
             sport = 59724,dport = 2006,vtag = 0,sum = 1614594302,chunks = [
-                #sctp_chunk{type = 1,flags = 0,len = 48,payload =
+                #sctp_chunk{type = 1,i = 0,u = 0,b = 0, e = 0,len = 48,payload =
                     #sctp_chunk_init{
                         itag = 2970287606,a_rwnd = 1500,outbound_streams = 5,
                         inbound_streams = 65535,tsn = 2961831077, params = [
@@ -49,7 +49,7 @@ sctp_init_chunk1() ->
     Result = {
         #sctp{
             sport = 41257,dport = 21,vtag = 0,sum = 308264958,chunks = [
-                #sctp_chunk{type = 1,flags = 0,len = 40, payload =
+                #sctp_chunk{type = 1,i = 0,u = 0,b = 0, e = 0,len = 40, payload =
                    #sctp_chunk_init{
                         itag = 882595313,a_rwnd = 4294967295,outbound_streams = 1,
                         inbound_streams = 1,tsn = 0, params = [
@@ -68,7 +68,7 @@ sctp_init_ack_chunk() ->
     Result = {
         #sctp{
             sport = 2006,dport = 59724,vtag = 2970287606,sum = 2902204350,chunks = [
-                #sctp_chunk{type = 2,flags = 0,len = 408,payload =
+                #sctp_chunk{type = 2,i = 0,u = 0,b = 0, e = 0,len = 408,payload =
                     #sctp_chunk_init_ack{
                         itag = 3211144336,a_rwnd = 65536,outbound_streams = 10,
                         inbound_streams = 5,tsn = 321265112,params = [
@@ -90,7 +90,7 @@ sctp_cookie_echo_chunk() ->
     Result = {
         #sctp{
             sport = 59724,dport = 2006,vtag = 3211144336,sum = 3598540682,chunks = [
-                #sctp_chunk{type = 10,flags = 0,len = 324,payload =
+                #sctp_chunk{type = 10,i = 0,u = 0,b = 0, e = 0,len = 324,payload =
                     #sctp_chunk_cookie_echo{cookie = ?SCTP_INIT_ACK_STATE_COOKIE}
                 }
             ]
@@ -103,7 +103,7 @@ sctp_cookie_ack_chunk() ->
     Result = {
         #sctp{
             sport = 2006,dport = 59724,vtag = 2970287606,sum = 3517160060,chunks = [
-                #sctp_chunk{type = 11,flags = 0,len = 0,payload = #sctp_chunk_cookie_ack{}}
+                #sctp_chunk{type = 11,i = 0,u = 0,b = 0, e = 0,len = 0,payload = #sctp_chunk_cookie_ack{}}
             ]
         }, <<>>
     },
@@ -114,7 +114,7 @@ sctp_data_chunk() ->
     Result = {
         #sctp{
             sport = 59724,dport = 2006,vtag = 3211144336,sum = 1694899720,chunks = [
-                #sctp_chunk{type = 0,flags = 3,len = 18,payload =
+                #sctp_chunk{type = 0,i = 0,u = 0,b = 1, e = 1,len = 18,payload =
                     #sctp_chunk_data{tsn = 2961831077,sid = 0,ssn = 0,ppi = 0,data = <<"Test 0">>}
                 }
             ]
@@ -127,7 +127,7 @@ sctp_sack_chunk() ->
     Result = {
         #sctp{
             sport = 2927,dport = 2927,vtag = 1909763671,sum = 2589260046,chunks = [
-                #sctp_chunk{type = 3,flags = 0,len = 20,payload =
+                #sctp_chunk{type = 3,i = 0,u = 0,b = 0, e = 0,len = 20,payload =
                     #sctp_chunk_sack{
                         tsn_ack = 1893031318,a_rwnd = 1240320,
                         number_gap_ack_blocks = 0,number_duplicate_tsn = 2,
@@ -145,7 +145,7 @@ sctp_heartbeat_chunk() ->
     Result = {
         #sctp{
             sport = 59724,dport = 2006,vtag = 3211144336,sum = 1607855905,chunks = [
-                #sctp_chunk{type = 4,flags = 0,len = 48,payload =
+                #sctp_chunk{type = 4,i = 0,u = 0,b = 0, e = 0,len = 48,payload =
                     #sctp_chunk_heartbeat{type = 1,info = ?SCTP_HEARTBEAT_INFO}
                 }
             ]
@@ -158,7 +158,7 @@ sctp_heartbeat_ack_chunk() ->
     Result = {
         #sctp{
             sport = 2006,dport = 59724,vtag = 2970287606,sum = 4192969679,chunks = [
-                #sctp_chunk{type = 5,flags = 0,len = 48,payload =
+                #sctp_chunk{type = 5,i = 0,u = 0,b = 0, e = 0,len = 48,payload =
                     #sctp_chunk_heartbeat_ack{type = 1,info = ?SCTP_HEARTBEAT_INFO}
                 }
             ]
@@ -171,7 +171,7 @@ sctp_abort_chunk() ->
     Result = {
         #sctp{
             sport = 59724,dport = 2006,vtag = 3211144336,sum = 80506190,chunks = [
-                #sctp_chunk{type = 6,flags = 0,len = 4,payload =
+                #sctp_chunk{type = 6,i = 0,u = 0,b = 0, e = 0,len = 4,payload =
                     #sctp_chunk_abort{error_causes = [
                         #sctp_error_cause{code = 12,descr = "User Initiated Abort",opts = [
                             {abort_reason,<<>>}
@@ -187,7 +187,7 @@ sctp_shutdown_chunk() ->
     Result = {
         #sctp{
             sport = 44282,dport = 2006,vtag = 3894864518,sum = 3455106587,chunks = [
-                #sctp_chunk{type = 7,flags = 0,len = 4,payload =
+                #sctp_chunk{type = 7,i = 0,u = 0,b = 0, e = 0,len = 4,payload =
                     #sctp_chunk_shutdown{tsn_ack = 430357211}
                 }
             ]
@@ -200,7 +200,7 @@ sctp_shutdown_ack_chunk() ->
     Result = {
         #sctp{
             sport = 2006,dport = 44282,vtag = 1619613099,sum = 3544315687,chunks = [
-                #sctp_chunk{type = 8,flags = 0,len = 0,payload = #sctp_chunk_shutdown_ack{}}
+                #sctp_chunk{type = 8,i = 0,u = 0,b = 0, e = 0,len = 0,payload = #sctp_chunk_shutdown_ack{}}
             ]
         }, <<>>
     },
@@ -211,7 +211,7 @@ sctp_shutdown_complete_chunk() ->
     Result = {
         #sctp{
             sport = 44282,dport = 2006,vtag = 3894864518,sum = 2141610842,chunks = [
-                #sctp_chunk{type = 14,flags = 0,len = 0,payload = #sctp_chunk_shutdown_complete{}}
+                #sctp_chunk{type = 14,i = 0,u = 0,b = 0, e = 0,len = 0,payload = #sctp_chunk_shutdown_complete{}}
             ]
         }, <<>>
     },

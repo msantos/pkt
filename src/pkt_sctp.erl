@@ -45,7 +45,7 @@ codec(<<SPort:16, DPort:16, VTag:32, Sum:32, Payload/binary>>) ->
 
 %% Internal functions
 
-decode_chunks(<<Type:8, Flags:8, Length:16, Rest/binary>>, Acc) when Length /= 0 ->
+decode_chunks(<<Type:8, Flags:1/binary-unit:8, Length:16, Rest/binary>>, Acc) when Length /= 0 ->
     {L, Pad} = case Length rem 4 of
         0 -> % No padding bytes
             {Length - 4, 0};
@@ -60,8 +60,14 @@ decode_chunks(Other, Acc) -> {Acc, Other}.
 
 -spec chunk(byte(), byte(), non_neg_integer(), binary()) -> #sctp_chunk{}.
 chunk(Type, Flags, Len, Payload) ->
+    <<_Spare:4, I:1, U:1, B:1, E:1>> = Flags,
 	#sctp_chunk{
-        type = Type, flags = Flags, len = Len - 4,
+        type = Type,
+        i = I,
+        u = U,
+        b = B,
+        e = E,
+        len = Len - 4,
         payload = chunk_payload(Type, Payload)
     }.
 
