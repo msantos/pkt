@@ -1,8 +1,2 @@
-ebin/
-priv/
-.eunit/
-.test
+_build
 *.swp
-rebar
-*.beam
-.depsolver_plt
