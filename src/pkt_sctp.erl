@@ -61,7 +61,7 @@ decode_chunks(<<>>, Acc) -> {Acc, <<>>};
 %% Ignore other bytes which are not SCTP chunks (VSS, ...)
 decode_chunks(Other, Acc) -> {Acc, Other}.
 
--spec chunk(byte(), byte(), non_neg_integer(), binary()) -> #sctp_chunk{}.
+-spec chunk(byte(), binary(), non_neg_integer(), binary()) -> #sctp_chunk{}.
 chunk(Type, Flags, Len, Payload) ->
     <<_Spare:4, I:1, U:1, B:1, E:1>> = Flags,
 	#sctp_chunk{
