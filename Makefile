@@ -1,4 +1,4 @@
-REBAR = $(shell which rebar3 || echo ./rebar3)
+REBAR ?= rebar3
 
 .PHONY: test
 
@@ -13,3 +13,6 @@ test:
 
 dialyzer:
 	@$(REBAR) dialyzer
+
+shell:
+	@$(REBAR) shell
