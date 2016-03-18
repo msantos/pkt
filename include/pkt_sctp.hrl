@@ -12,14 +12,6 @@
 -define(SCTP_CHUNK_COOKIE_ACK, 11).         % Cookie acknowledgement
 -define(SCTP_CHUNK_SHUTDOWN_COMPLETE, 14).  % Shutdown complete
 
--record(sctp, {
-    sport  = 0 :: inet:port_number(),
-    dport  = 0 :: inet:port_number(),
-    vtag   = 0 :: pkt:uint32_t(),
-    sum    = 0 :: pkt:uint32_t(),
-    chunks = []
-}).
-
 -record(sctp_chunk, {
     type = 0 :: 0..254, %% The value of 255 is reserved for future use as an extension field
     %% Flags
@@ -32,35 +24,47 @@
     payload = 0
 }).
 
+-record(sctp, {
+    sport  = 0  :: inet:port_number(),
+    dport  = 0  :: inet:port_number(),
+    vtag   = 0  :: pkt:uint32_t(),
+    sum    = 0  :: pkt:uint32_t(),
+    chunks = [] :: [#sctp_chunk{}]
+}).
+
 -record(sctp_chunk_data, {
-    tsn = 0, sid = 0, ssn = 0, ppi = 0, data
+    tsn = 0 :: pkt:uint32_t(),
+    sid = 0 :: pkt:uint16_t(),
+    ssn = 0 :: pkt:uint16_t(),
+    ppi = 0 :: pkt:uint32_t(),
+    data = <<>> :: binary()
 }).
 
 -record(sctp_chunk_init, {
-    itag :: pos_integer(),
-    a_rwnd :: non_neg_integer(),
-    outbound_streams :: pos_integer(),
-    inbound_streams :: pos_integer(),
-    tsn :: non_neg_integer(),
-    params  = [] :: [proplists:property()]
+    itag = 0 :: pkt:uint32_t(),
+    a_rwnd = 0 :: pkt:uint32_t(),
+    outbound_streams = 0 :: pkt:uint16_t(),
+    inbound_streams = 0 :: pkt:uint16_t(),
+    tsn = 0 :: pkt:uint32_t(),
+    params = [] :: [proplists:property()]
 }).
 
 -record(sctp_chunk_init_ack, {
-    itag :: pos_integer(),
-    a_rwnd :: non_neg_integer(),
-    outbound_streams :: pos_integer(),
-    inbound_streams :: pos_integer(),
-    tsn :: non_neg_integer(),
+    itag = 0 :: pkt:uint32_t(),
+    a_rwnd = 0 :: pkt:uint32_t(),
+    outbound_streams = 0 :: pkt:uint16_t(),
+    inbound_streams = 0 :: pkt:uint16_t(),
+    tsn = 0 :: pkt:uint32_t(),
     params  = [] :: [proplists:property()]
 }).
 
 -record(sctp_chunk_sack, {
-    tsn_ack :: non_neg_integer(),
-    a_rwnd :: non_neg_integer(),
-    number_gap_ack_blocks :: non_neg_integer(),
-    number_duplicate_tsn :: non_neg_integer(),
-    gap_ack_blocks :: [{non_neg_integer(), non_neg_integer()}],
-    duplicate_tsns :: [non_neg_integer()]
+    tsn_ack = 0 :: pkt:uint32_t(),
+    a_rwnd = 0 :: pkt:uint32_t(),
+    number_gap_ack_blocks = 0 :: pkt:uint16_t(),
+    number_duplicate_tsn = 0 :: pkt:uint16_t(),
+    gap_ack_blocks = [] :: [{pkt:uint16_t(), pkt:uint16_t()}],
+    duplicate_tsns = [] :: [pkt:uint32_t()]
 }).
 
 -record(sctp_chunk_cookie_echo, {
@@ -70,15 +74,17 @@
 -record(sctp_chunk_cookie_ack, {}).
 
 -record(sctp_chunk_heartbeat, {
-    type = 1, info :: binary()
+    type = 1 :: 1,
+    info = <<>> :: binary()
 }).
 
 -record(sctp_chunk_heartbeat_ack, {
-    type = 1, info :: binary()
+    type = 1 :: 1,
+    info = <<>> :: binary()
 }).
 
 -record(sctp_chunk_shutdown, {
-    tsn_ack :: non_neg_integer()
+    tsn_ack = 0 :: pkt:uint32_t()
 }).
 
 -record(sctp_chunk_shutdown_ack, {}).
