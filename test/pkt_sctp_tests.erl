@@ -1,218 +1,278 @@
 -module(pkt_sctp_tests).
 
--include("pkt_sctp_tests.hrl").
--include_lib("pkt/include/pkt_sctp.hrl").
 -include_lib("eunit/include/eunit.hrl").
+-include_lib("pkt/include/pkt_sctp.hrl").
+-include_lib("pcapfile/include/pcapfile.hrl").
 
--define(SCTP_DATA_FILE(File), filename:join(["../test/sctp_data/", File])).
+sctp_payload(File) ->
+    {ok, #pcap{records = Recs}} = pcapfile:read_file(filename:join(["test/sctp_data", File])),
+    %% Skip Ethernet & IPv4
+    #pcap_record{payload = <<_Skip:34/binary-unit:8, Data/binary>>} = hd(Recs),
+    Data.
 
 codec_test_() ->
     [
-        sctp_init_chunk(),
-        sctp_init_chunk1(),
-        sctp_init_ack_chunk(),
-        sctp_cookie_echo_chunk(),
-        sctp_cookie_ack_chunk(),
-        sctp_data_chunk(),
-        sctp_sack_chunk(),
-        sctp_heartbeat_chunk(),
-        sctp_heartbeat_ack_chunk(),
-        sctp_abort_chunk(),
-        sctp_shutdown_chunk(),
-        sctp_shutdown_ack_chunk(),
-        sctp_shutdown_complete_chunk()
+        init_chunk(),
+        init_ack_chunk(),
+        cookie_echo_chunk(),
+        cookie_ack_chunk(),
+        data_chunk(),
+        sack_chunk(),
+        heartbeat_chunk(),
+        heartbeat_ack_chunk(),
+        abort_chunk(),
+        shutdown_chunk(),
+        shutdown_ack_chunk(),
+        shutdown_complete_chunk()
     ].
 
-sctp_init_chunk() ->
-    {ok, Data} = file:read_file(?SCTP_DATA_FILE("init.raw")),
-    Result = {
-        #sctp{
-            sport = 59724,dport = 2006,vtag = 0,sum = 1614594302,chunks = [
-                #sctp_chunk{type = 1,i = 0,u = 0,b = 0, e = 0,len = 48,payload =
-                    #sctp_chunk_init{
-                        itag = 2970287606,a_rwnd = 1500,outbound_streams = 5,
-                        inbound_streams = 65535,tsn = 2961831077, params = [
-                            {address_types,[ipv4]},
-                            {ipv4,{192,168,1,100}},
-                            {ipv4,{127,0,0,1}}
-                        ]
-                    }
+init_chunk() ->
+    SCTP = #sctp{
+        sport = 38001,
+        dport = 2006,
+        vtag = 0,
+        sum = 0,
+        chunks = [
+            #sctp_chunk{
+                type = 1,
+                i = 0,u = 0,b = 0,e = 0,
+                len = 56,
+                payload = #sctp_chunk_init{
+                    itag = 3314912159,a_rwnd = 1500,
+                    outbound_streams = 5,inbound_streams = 65535,tsn = 19012793,
+                    params = [
+                        {address_types,[ipv4]},
+                        {ipv4,{192,168,2,2}},
+                        {ipv4,{192,168,1,102}},
+                        {ipv4,{127,0,0,1}}
+                    ]
                 }
-            ]
-        }, <<>>
+            }
+        ]
     },
-    ?_assertEqual(Result, pkt:sctp(Data)).
+    Data = sctp_payload("init.pcap"),
+    ?_assertEqual({SCTP, <<>>}, pkt:sctp(Data)).
 
-%% Decode supported address types parameter with multiple values
-sctp_init_chunk1() ->
-    {ok, Data} = file:read_file(?SCTP_DATA_FILE("init1.raw")),
-    Result = {
-        #sctp{
-            sport = 41257,dport = 21,vtag = 0,sum = 308264958,chunks = [
-                #sctp_chunk{type = 1,i = 0,u = 0,b = 0, e = 0,len = 40, payload =
-                   #sctp_chunk_init{
-                        itag = 882595313,a_rwnd = 4294967295,outbound_streams = 1,
-                        inbound_streams = 1,tsn = 0, params = [
-                            {address_types,[ipv4,ipv6,hostname]},
-                            {ipv4,{127,0,0,1}}
-                        ]
-                    }
+init_ack_chunk() ->
+    SCTP = #sctp{
+        sport = 2006,
+        dport = 38001,
+        vtag = 3314912159,
+        sum = 3113214697,
+        chunks = [
+            #sctp_chunk{
+                type = 2,
+                i = 0,u = 0,b = 0,e = 0,
+                len = 60,
+                payload = #sctp_chunk_init_ack{
+                    itag = 346325327,
+                    a_rwnd = 65536,outbound_streams = 10,inbound_streams = 5,
+                    tsn = 1885860370,
+                    params = [
+                        {state_cookie,<<21,235,131,195,114,192>>},
+                        {ipv4,{192,168,2,2}},
+                        {ipv4,{192,168,1,102}},
+                        {ipv4,{127,0,0,1}}
+                    ]
                 }
-            ]
-        }, <<>>
+            }
+        ]
     },
-    ?_assertEqual(Result, pkt:sctp(Data)).
+    Data = sctp_payload("init_ack.pcap"),
+    ?_assertEqual({SCTP, <<>>}, pkt:sctp(Data)).
 
-sctp_init_ack_chunk() ->
-    {ok, Data} = file:read_file(?SCTP_DATA_FILE("init_ack.raw")),
-    Result = {
-        #sctp{
-            sport = 2006,dport = 59724,vtag = 2970287606,sum = 2902204350,chunks = [
-                #sctp_chunk{type = 2,i = 0,u = 0,b = 0, e = 0,len = 408,payload =
-                    #sctp_chunk_init_ack{
-                        itag = 3211144336,a_rwnd = 65536,outbound_streams = 10,
-                        inbound_streams = 5,tsn = 321265112,params = [
-                            {state_cookie, ?SCTP_INIT_ACK_STATE_COOKIE},
-                            {ipv6,{65152,0,0,0,543,50943,65027,38823}},
-                            {ipv4,{192,168,1,100}},
-                            {ipv6,{0,0,0,0,0,0,0,1}},
-                            {ipv4,{127,0,0,1}}
-                        ]
-                    }
+cookie_echo_chunk() ->
+    SCTP = #sctp{
+        sport = 38001,
+        dport = 2006,
+        vtag = 346325327,
+        sum = 1432062984,
+        chunks = [
+            #sctp_chunk{
+                type = 10,
+                i = 0,u = 0,b = 0,e = 0,
+                len = 5,
+                payload = #sctp_chunk_cookie_echo{cookie = <<21,235,131,195,114>>}
+            }
+        ]
+    },
+    Data = sctp_payload("cookie_echo.pcap"),
+    ?_assertEqual({SCTP, <<>>}, pkt:sctp(Data)).
+
+cookie_ack_chunk() ->
+    SCTP = #sctp{
+        sport = 2006,
+        dport = 38001,
+        vtag = 3314912159,
+        sum = 0,
+        chunks = [
+            #sctp_chunk{
+                type = 11,
+                i = 0,u = 0,b = 0,e = 0,
+                len = 0,
+                payload = #sctp_chunk_cookie_ack{}
+            }
+        ]
+    },
+    Data = sctp_payload("cookie_ack.pcap"),
+    ?_assertEqual({SCTP, <<>>}, pkt:sctp(Data)).
+
+data_chunk() ->
+    SCTP = #sctp{
+        sport = 38001,
+        dport = 2006,
+        vtag = 346325327,
+        sum = 0,
+        chunks = [
+            #sctp_chunk{
+                type = 0,
+                i = 0,u = 0,b = 1,e = 1,
+                len = 18,
+                payload = #sctp_chunk_data{
+                    tsn = 19012793,sid = 0,ssn = 0,
+                    ppi = 0,data = <<"Test 0">>
                 }
-            ]
-        }, <<>>
+            }
+        ]
     },
-    ?_assertEqual(Result, pkt:sctp(Data)).
+    Data = sctp_payload("data.pcap"),
+    ?_assertEqual({SCTP, <<>>}, pkt:sctp(Data)).
 
-sctp_cookie_echo_chunk() ->
-    {ok, Data} = file:read_file(?SCTP_DATA_FILE("cookie_echo.raw")),
-    Result = {
-        #sctp{
-            sport = 59724,dport = 2006,vtag = 3211144336,sum = 3598540682,chunks = [
-                #sctp_chunk{type = 10,i = 0,u = 0,b = 0, e = 0,len = 324,payload =
-                    #sctp_chunk_cookie_echo{cookie = ?SCTP_INIT_ACK_STATE_COOKIE}
+sack_chunk() ->
+    SCTP = #sctp{
+        sport = 2006,
+        dport = 38001,
+        vtag = 3314912159,
+        sum = 0,
+        chunks = [
+            #sctp_chunk{
+                type = 3,
+                i = 0,u = 0,b = 0,e = 0,
+                len = 12,
+                payload = #sctp_chunk_sack{
+                    tsn_ack = 19012793,
+                    a_rwnd = 65530,
+                    number_gap_ack_blocks = 0, number_duplicate_tsn = 0,
+                    gap_ack_blocks = [], duplicate_tsns = []
                 }
-            ]
-        }, <<>>
+            }
+        ]
     },
-    ?_assertEqual(Result, pkt:sctp(Data)).
+    Data = sctp_payload("sack.pcap"),
+    ?_assertEqual({SCTP, <<>>}, pkt:sctp(Data)).
 
-sctp_cookie_ack_chunk() ->
-    {ok, Data} = file:read_file(?SCTP_DATA_FILE("cookie_ack.raw")),
-    Result = {
-        #sctp{
-            sport = 2006,dport = 59724,vtag = 2970287606,sum = 3517160060,chunks = [
-                #sctp_chunk{type = 11,i = 0,u = 0,b = 0, e = 0,len = 0,payload = #sctp_chunk_cookie_ack{}}
-            ]
-        }, <<>>
+heartbeat_chunk() ->
+    SCTP = #sctp{
+        sport = 38001,
+        dport = 2006,
+        vtag = 346325327,
+        sum = 3432649193,
+        chunks = [
+            #sctp_chunk{
+                type = 4,
+                i = 0,u = 0,b = 0,e = 0,
+                len = 9,
+                payload = #sctp_chunk_heartbeat{type = 1,info = <<2,0,7,214,192>>}
+            }
+        ]
     },
-    ?_assertEqual(Result, pkt:sctp(Data)).
+    Data = sctp_payload("heartbeat.pcap"),
+    ?_assertEqual({SCTP, <<>>}, pkt:sctp(Data)).
 
-sctp_data_chunk() ->
-    {ok, Data} = file:read_file(?SCTP_DATA_FILE("data.raw")),
-    Result = {
-        #sctp{
-            sport = 59724,dport = 2006,vtag = 3211144336,sum = 1694899720,chunks = [
-                #sctp_chunk{type = 0,i = 0,u = 0,b = 1, e = 1,len = 18,payload =
-                    #sctp_chunk_data{tsn = 2961831077,sid = 0,ssn = 0,ppi = 0,data = <<"Test 0">>}
+heartbeat_ack_chunk() ->
+    SCTP = #sctp{
+        sport = 2006,
+        dport = 38001,
+        vtag = 3314912159,
+        sum = 220783544,
+        chunks = [
+            #sctp_chunk{
+                type = 5,
+                i = 0,u = 0,b = 0,e = 0,
+                len = 9,
+                payload = #sctp_chunk_heartbeat_ack{type = 1, info = <<2,0,7,214,192>>}
+            }
+        ]
+    },
+    Data = sctp_payload("heartbeat_ack.pcap"),
+    ?_assertEqual({SCTP, <<>>}, pkt:sctp(Data)).
+
+abort_chunk() ->
+    SCTP = #sctp{
+        sport = 38001,
+        dport = 2006,
+        vtag = 346325327,
+        sum = 0,
+        chunks = [
+            #sctp_chunk{
+                type = 6,
+                i = 0,u = 0,b = 0,e = 0,
+                len = 4,
+                payload = #sctp_chunk_abort{
+                    error_causes = [
+                        #sctp_error_cause{
+                            code = 12,
+                            descr = "User Initiated Abort",
+                            opts = [{abort_reason,<<>>}]
+                        }
+                    ]
                 }
-            ]
-        }, <<>>
+            }
+        ]
     },
-    ?_assertEqual(Result, pkt:sctp(Data)).
+    Data = sctp_payload("abort.pcap"),
+    ?_assertEqual({SCTP, <<>>}, pkt:sctp(Data)).
 
-sctp_sack_chunk() ->
-    {ok, Data} = file:read_file(?SCTP_DATA_FILE("sack.raw")),
-    Result = {
-        #sctp{
-            sport = 2927,dport = 2927,vtag = 1909763671,sum = 2589260046,chunks = [
-                #sctp_chunk{type = 3,i = 0,u = 0,b = 0, e = 0,len = 20,payload =
-                    #sctp_chunk_sack{
-                        tsn_ack = 1893031318,a_rwnd = 1240320,
-                        number_gap_ack_blocks = 0,number_duplicate_tsn = 2,
-                        gap_ack_blocks = [],
-                        duplicate_tsns = [1893031317,1893031318]
-                    }
-                }
-            ]
-        }, <<>>
+shutdown_chunk() ->
+    SCTP = #sctp{
+        sport = 52565,
+        dport = 2006,
+        vtag = 775466434,
+        sum = 0,
+        chunks = [
+            #sctp_chunk{
+                type = 7,
+                i = 0,u = 0,b = 0,e = 0,
+                len = 4,
+                payload = #sctp_chunk_shutdown{tsn_ack = 3349662519}
+            }
+        ]
     },
-    ?_assertEqual(Result, pkt:sctp(Data)).
+    Data = sctp_payload("shutdown.pcap"),
+    ?_assertEqual({SCTP, <<>>}, pkt:sctp(Data)).
 
-sctp_heartbeat_chunk() ->
-    {ok, Data} = file:read_file(?SCTP_DATA_FILE("heartbeat.raw")),
-    Result = {
-        #sctp{
-            sport = 59724,dport = 2006,vtag = 3211144336,sum = 1607855905,chunks = [
-                #sctp_chunk{type = 4,i = 0,u = 0,b = 0, e = 0,len = 48,payload =
-                    #sctp_chunk_heartbeat{type = 1,info = ?SCTP_HEARTBEAT_INFO}
-                }
-            ]
-        }, <<>>
+shutdown_ack_chunk() ->
+    SCTP = #sctp{
+        sport = 2006,
+        dport = 52565,
+        vtag = 15739429,
+        sum = 0,
+        chunks = [
+            #sctp_chunk{
+                type = 8,
+                i = 0,u = 0,b = 0,e = 0,
+                len = 0,
+                payload = #sctp_chunk_shutdown_ack{}
+            }
+        ]
     },
-    ?_assertEqual(Result, pkt:sctp(Data)).
+    Data = sctp_payload("shutdown_ack.pcap"),
+    ?_assertEqual({SCTP, <<>>}, pkt:sctp(Data)).
 
-sctp_heartbeat_ack_chunk() ->
-    {ok, Data} = file:read_file(?SCTP_DATA_FILE("heartbeat_ack.raw")),
-    Result = {
-        #sctp{
-            sport = 2006,dport = 59724,vtag = 2970287606,sum = 4192969679,chunks = [
-                #sctp_chunk{type = 5,i = 0,u = 0,b = 0, e = 0,len = 48,payload =
-                    #sctp_chunk_heartbeat_ack{type = 1,info = ?SCTP_HEARTBEAT_INFO}
-                }
-            ]
-        }, <<>>
+shutdown_complete_chunk() ->
+    SCTP = #sctp{
+        sport = 52565,
+        dport = 2006,
+        vtag = 775466434,
+        sum = 0,
+        chunks = [
+            #sctp_chunk{
+                type = 14,
+                i = 0,u = 0,b = 0,e = 0,
+                len = 0,
+                payload = #sctp_chunk_shutdown_complete{}
+            }
+        ]
     },
-    ?_assertEqual(Result, pkt:sctp(Data)).
-
-sctp_abort_chunk() ->
-    {ok, Data} = file:read_file(?SCTP_DATA_FILE("abort.raw")),
-    Result = {
-        #sctp{
-            sport = 59724,dport = 2006,vtag = 3211144336,sum = 80506190,chunks = [
-                #sctp_chunk{type = 6,i = 0,u = 0,b = 0, e = 0,len = 4,payload =
-                    #sctp_chunk_abort{error_causes = [
-                        #sctp_error_cause{code = 12,descr = "User Initiated Abort",opts = [
-                            {abort_reason,<<>>}
-                        ]}
-                    ]}
-                }]
-        }, <<>>
-    },
-    ?_assertEqual(Result, pkt:sctp(Data)).
-
-sctp_shutdown_chunk() ->
-    {ok, Data} = file:read_file(?SCTP_DATA_FILE("shutdown.raw")),
-    Result = {
-        #sctp{
-            sport = 44282,dport = 2006,vtag = 3894864518,sum = 3455106587,chunks = [
-                #sctp_chunk{type = 7,i = 0,u = 0,b = 0, e = 0,len = 4,payload =
-                    #sctp_chunk_shutdown{tsn_ack = 430357211}
-                }
-            ]
-        }, <<>>
-    },
-    ?_assertEqual(Result, pkt:sctp(Data)).
-
-sctp_shutdown_ack_chunk() ->
-    {ok, Data} = file:read_file(?SCTP_DATA_FILE("shutdown_ack.raw")),
-    Result = {
-        #sctp{
-            sport = 2006,dport = 44282,vtag = 1619613099,sum = 3544315687,chunks = [
-                #sctp_chunk{type = 8,i = 0,u = 0,b = 0, e = 0,len = 0,payload = #sctp_chunk_shutdown_ack{}}
-            ]
-        }, <<>>
-    },
-    ?_assertEqual(Result, pkt:sctp(Data)).
-
-sctp_shutdown_complete_chunk() ->
-    {ok, Data} = file:read_file(?SCTP_DATA_FILE("shutdown_complete.raw")),
-    Result = {
-        #sctp{
-            sport = 44282,dport = 2006,vtag = 3894864518,sum = 2141610842,chunks = [
-                #sctp_chunk{type = 14,i = 0,u = 0,b = 0, e = 0,len = 0,payload = #sctp_chunk_shutdown_complete{}}
-            ]
-        }, <<>>
-    },
-    ?_assertEqual(Result, pkt:sctp(Data)).
+    Data = sctp_payload("shutdown_complete.pcap"),
+    ?_assertEqual({SCTP, <<>>}, pkt:sctp(Data)).
