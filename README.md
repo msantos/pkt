@@ -110,7 +110,7 @@ try pkt:decapsulate(Frame) of
         {{Saddr, Sport}, {Daddr, Dport}}
 catch
     error:_ ->
-        ok; % ignore invalid packets
+        ok % ignore invalid packets
 end
 ```
 
