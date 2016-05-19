@@ -120,6 +120,9 @@ decapsulate_next({ether, Data}, Headers) ->
 decapsulate_next({'802.1q', Data}, Headers) ->
     {Header, Payload} = '802.1q'(Data),
     decapsulate_next({next(Header), Payload}, [Header|Headers]);
+decapsulate_next({'802.1qinq', Data}, Headers) ->
+    {Header, Payload} = '802.1q'(Data),
+    decapsulate_next({next(Header), Payload}, [Header|Headers]);
 decapsulate_next({llc, Data}, Headers) ->
     {Header, Payload} = llc(Data),
     lists:reverse([Payload, Header|Headers]);
@@ -267,7 +270,7 @@ decode_next({Proto, Data}, Headers) when
 next(#null{family = Family}) -> family(Family);
 next(#linux_cooked{pro = Pro}) -> ether_type(Pro);
 next(#ether{type = Type}) -> ether_type(Type);
-next(#'802.1q'{vid = Type}) -> ether_type(Type);
+next(#'802.1q'{type = Type}) -> ether_type(Type);
 next(#ipv4{p = P}) -> ipproto(P);
 next(#gre{type = Type}) -> ether_type(Type);
 next(#ipv6{next = Next}) -> ipproto(Next);

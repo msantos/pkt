@@ -1,4 +1,4 @@
-%% Copyright (c) 2009-2015, Michael Santos <michael.santos@gmail.com>
+%% Copyright (c) 2009-2016, Michael Santos <michael.santos@gmail.com>
 %% All rights reserved.
 %%
 %% Redistribution and use in source and binary forms, with or without
@@ -41,7 +41,9 @@ type(?ETH_P_LLDP) -> lldp;
 %% IEEE 802.3 Ethernet
 type(EtherType) when EtherType < 16#05DC -> llc;
 %% 802.1Q Virtual LAN
-type(?ETH_P_802_1Q) -> '802.1q'.
+type(?ETH_P_802_1Q) -> '802.1q';
+%% 802.1ad (802.1q QinQ)
+type(?ETH_P_802_1QinQ) -> '802.1qinq'.
 
 codec(<<Dhost:6/bytes, Shost:6/bytes, Type:16, Payload/binary>>) ->
 %    Len = byte_size(Packet) - 4,
