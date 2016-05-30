@@ -1,4 +1,4 @@
-REBAR ?= rebar
+REBAR ?= rebar3
 
 .PHONY: compile test clean
 
