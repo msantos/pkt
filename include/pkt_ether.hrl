@@ -4,6 +4,7 @@
 -define(ETH_P_IPV6, 16#86DD).
 -define(ETH_P_802_1Q, 16#8100).
 -define(ETH_P_LLDP, 16#88CC).
+-define(ETH_P_EAP_LAN, 16#888E).
 
 -record(ether, {
     dhost = <<0,0,0,0,0,0>> :: <<_:48>>,
