@@ -1,6 +1,6 @@
-REBAR ?= rebar3
+REBAR ?= rebar
 
-.PHONY: compile test clean
+.PHONY: test 
 
 compile:
 	@$(REBAR) compile
