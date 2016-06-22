@@ -137,7 +137,7 @@
 
 -define(ORGANIZATIONALLY_SPECIFIC, 127).
 
--record(organizationally_specific, { value = <<>> :: binary() }).
+-record(organizationally_specific, { value = <<>> :: binary(), oui, subtype }).
 -type organizationally_specific() :: #organizationally_specific{}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -157,3 +157,9 @@
 
 -record(lldp, { pdus = [] :: [pdu()] }).
 -type lldp() :: #lldp{}.
+
+-define(IEEE_8021, 16#0080C2).
+-define(IEEE_8023, 16#00120F).
+-define(TIA_TR41, 16#0012BB).
+-define(PROFIBUS, 16#000ECF).
+-define(GMBH, 16#30B216).
