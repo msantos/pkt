@@ -138,7 +138,7 @@
 -define(ORGANIZATIONALLY_SPECIFIC, 127).
 
 -record(organizationally_specific, { value = <<>> :: binary(), oui :: atom(), subtype :: pkt:uint8_t() }).
-%%-record(organizationally_specific, { value = <<>> :: binary() }).
+
 -type organizationally_specific() :: #organizationally_specific{}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
