@@ -40,8 +40,8 @@
 
         res = 0 :: pkt:uint16_t(), res2 = 0 :: pkt:uint16_t(),
 
-        saddr :: pkt:in6_addr(),
-        daddr :: pkt:in6_addr(),
+        saddr = {0,0,0,0,0,0,0,0} :: pkt:in6_addr(),
+        daddr = {0,0,0,0,0,0,0,0} :: pkt:in6_addr(),
 
         % router advertisement
         hop = 0 :: pkt:uint8_t(), m = 0 :: pkt:bit(), o = 0 :: pkt:bit(), lifetime = 0 :: pkt:uint16_t(), reach = 0 :: pkt:uint32_t(), retrans = 0 :: pkt:uint32_t(),
