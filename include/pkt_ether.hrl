@@ -5,6 +5,8 @@
 -define(ETH_P_802_1Q, 16#8100).
 -define(ETH_P_802_1QinQ, 16#88a8).
 -define(ETH_P_LLDP, 16#88CC).
+-define(ETH_P_MPLS_UNI, 16#8847).
+-define(ETH_P_MPLS_MULTI, 16#8848).
 
 -record(ether, {
     dhost = <<0,0,0,0,0,0>> :: <<_:48>>,
