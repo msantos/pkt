@@ -7,6 +7,7 @@
 -include("pkt_802_1q.hrl").
 -include("pkt_arp.hrl").
 -include("pkt_lldp.hrl").
+-include("pkt_mpls.hrl").
 
 -include("pkt_gre.hrl").
 -include("pkt_icmp6.hrl").

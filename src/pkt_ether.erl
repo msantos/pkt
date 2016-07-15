@@ -43,7 +43,10 @@ type(EtherType) when EtherType < 16#05DC -> llc;
 %% 802.1Q Virtual LAN
 type(?ETH_P_802_1Q) -> '802.1q';
 %% 802.1ad (802.1q QinQ)
-type(?ETH_P_802_1QinQ) -> '802.1qinq'.
+type(?ETH_P_802_1QinQ) -> '802.1qinq';
+%% MPLS_
+type(?ETH_P_MPLS_UNI) -> mpls;
+type(?ETH_P_MPLS_MULTI) -> mpls.
 
 codec(<<Dhost:6/bytes, Shost:6/bytes, Type:16, Payload/binary>>) ->
 %    Len = byte_size(Packet) - 4,

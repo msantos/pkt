@@ -40,6 +40,7 @@
         makesum/1,
         ether/1,
         ether_type/1,
+        mpls/1,
         '802.1q'/1,
         llc/1,
         arp/1,
@@ -117,6 +118,9 @@ decapsulate_next({linux_cooked, Data}, Headers) ->
 decapsulate_next({ether, Data}, Headers) ->
     {Header, Payload} = ether(Data),
     decapsulate_next({next(Header), Payload}, [Header|Headers]);
+decapsulate_next({mpls, Data}, Headers) ->
+    {Header, Next, Payload} = mpls(Data),
+    decapsulate_next({Next, Payload}, [Header|Headers]);
 decapsulate_next({'802.1q', Data}, Headers) ->
     {Header, Payload} = '802.1q'(Data),
     decapsulate_next({next(Header), Payload}, [Header|Headers]);
@@ -295,6 +299,10 @@ ether(N) ->
 
 ether_type(N) ->
     pkt_ether:type(N).
+
+%% MPLS
+mpls(N) ->
+    pkt_mpls:codec(N).
 
 %% ARP
 arp(N) ->
