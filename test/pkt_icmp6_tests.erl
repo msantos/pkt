@@ -21,7 +21,7 @@ decode() ->
         {#icmp6{type = 128,code = 0,checksum = 65429,
                 un = <<0,0,0,0>>,
                 pptr = 0,mtu = 0,id = 1871,seq = 1,maxdelay = 0,res = 0,
-                res2 = 0,saddr = undefined,daddr = undefined,hop = 0,m = 0,
+                res2 = 0,saddr = {0,0,0,0,0,0,0,0},daddr = {0,0,0,0,0,0,0,0},hop = 0,m = 0,
                 o = 0,lifetime = 0,reach = 0,retrans = 0,r = 0,s = 0,
                 delay = 0},
           <<169,244,102,82,0,0,0,0,36,187,0,0,0,0,0,0,16,17,18,19,
