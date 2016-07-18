@@ -15,7 +15,8 @@ Originally part of epcap:
                 Packet = [ Header | Payload ]
                 Header = #ether{} | #arp{} | #null{} | #linux_cooked{} |
                     #ipv4{} | #ipv6{} | #tcp{} | #udp{} | #sctp{} | #icmp{} |
-                    #icmp6{} | #igmp{} | #gre{} | #llc{} | #vrrp{} | #'802.1q'{}
+                    #icmp6{} | #igmp{} | #gre{} | #llc{} | #vrrp{} | #'802.1q'{} |
+                    #lldp{} | #mpls{}
                 Payload = binary()
 
         Convert network protocols from binary data to a list of Erlang
@@ -39,7 +40,8 @@ Originally part of epcap:
                 Headers = [Header]
                 Header = #ether{} | #arp{} | #null{} | #linux_cooked{} |
                     #ipv4{} | #ipv6{} | #tcp{} | #udp{} | #sctp{} | #icmp{} |
-                    #icmp6{} | #igmp{} | #gre{} | #llc{} | #vrrp{} | #'802.1q'{}
+                    #icmp6{} | #igmp{} | #gre{} | #llc{} | #vrrp{} | #'802.1q'{} |
+                    #lldp{} | #mpls{}
                 SoFar = Headers | []
                 Payload = binary()
 
@@ -66,12 +68,15 @@ types.
     icmp(Packet) -> {#icmp{}, Payload} | binary()
     icmp6(Packet) -> {#icmp6{}, Payload} | binary()
     igmp(Packet) -> {#igmp{}, Payload} | binary()
+    mpls(Packet) -> {#mpls{}, Next, Payload}
+    lldp(Packet) -> {#lldp{}, Payload}
 
         Types   Packet = Header | binary()
                 Header = #ether{} | #null{} | #linux_cooked{} | #arp{} |
                     #ipv4{} | #ipv6{} | #tcp{} | #sctp{} | #udp{} |
                     #icmp{} | #icmp6{} | #igmp{} | #gre{} | #llc{} |
-                    #vrrp{} | #'802.1q'{}
+                    #vrrp{} | #'802.1q'{} | #lldp{} | #mpls{}
+                Next = ipv4 | ipv6
 
 
     makesum(Packet) -> integer()
