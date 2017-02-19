@@ -392,10 +392,10 @@ ipproto(N) ->
 family(?PF_INET) -> ipv4;
 family(Family) ->
     case {os:type(), Family} of
-        {{unix,darwin}, 30} -> inet6;
-        {{unix,freebsd}, 28} -> inet6;
-        {{unix,netbsd}, 24} -> inet6;
-        {{unix,openbsd}, 24} -> inet6
+        {{unix,darwin}, 30} -> ipv6;
+        {{unix,freebsd}, 28} -> ipv6;
+        {{unix,netbsd}, 24} -> ipv6;
+        {{unix,openbsd}, 24} -> ipv6
     end.
 
 %%
