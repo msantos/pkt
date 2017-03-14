@@ -219,6 +219,7 @@ decode_next({Proto, Data}, Headers) when
     Proto =:= ipv6;
     Proto =:= linux_cooked;
     Proto =:= null;
+    Proto =:= '802.1q';
 
     Proto =:= ipv6_ah;
     Proto =:= ipv6_dstopts;
