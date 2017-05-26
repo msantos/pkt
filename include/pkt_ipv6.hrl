@@ -1,7 +1,9 @@
+-define(IPV6_PROTO_TCP, 6).
+
 %% RFC 2460: IPv6 Specification
 -record(ipv6, {
         v = 6 :: pkt:bit4(), class = 0 :: pkt:uint8_t(), flow = 0 :: 0 .. 2#11111111111111111111,
-        len = 40 :: pkt:uint16_t(), next = ?IPPROTO_TCP :: pkt:uint8_t(), hop = 0 :: pkt:uint8_t(),
+        len = 40 :: pkt:uint16_t(), next = ?IPV6_PROTO_TCP :: pkt:uint8_t(), hop = 0 :: pkt:uint8_t(),
         saddr :: pkt:in6_addr(), daddr :: pkt:in6_addr()
     }).
 
