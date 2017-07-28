@@ -81,8 +81,39 @@ decode(<<?MANAGEMENT_ADDRESS:7, Length:9,
          Value:Length/bytes, Rest/bytes>>, Acc) ->
     Pdu = #management_address{ value = Value },
     decode(Rest, [Pdu | Acc]);
+decode(<<?ORGANIZATIONALLY_SPECIFIC:7, Length:9, ?IEEE_8021:24,
+    Subtype:8, Rest0/bytes>>, Acc) ->
+    Len = Length - 4,
+    <<Value:Len/bytes, Rest/bytes>> = Rest0,
+    Pdu = #organizationally_specific{ value = Value, oui = 'ieee 802.1', subtype = Subtype },
+    decode(Rest, [Pdu | Acc]);
+decode(<<?ORGANIZATIONALLY_SPECIFIC:7, Length:9, ?IEEE_8023:24,
+    Subtype:8, Rest0/bytes>>, Acc) ->
+    Len = Length - 4,
+    <<Value:Len/bytes, Rest/bytes>> = Rest0,
+    Pdu = #organizationally_specific{ value = Value, oui = 'ieee 802.3', subtype = Subtype },
+    decode(Rest, [Pdu | Acc]);
+decode(<<?ORGANIZATIONALLY_SPECIFIC:7, Length:9, ?TIA_TR41:24,
+    Subtype:8, Rest0/bytes>>, Acc) ->
+    Len = Length - 4,
+    <<Value:Len/bytes, Rest/bytes>> = Rest0,
+    Pdu = #organizationally_specific{ value = Value, oui = 'tr-41', subtype = Subtype },
+    decode(Rest, [Pdu | Acc]);
+decode(<<?ORGANIZATIONALLY_SPECIFIC:7, Length:9, ?PROFIBUS:24,
+    Subtype:8, Rest0/bytes>>, Acc) ->
+    Len = Length - 4,
+    <<Value:Len/bytes, Rest/bytes>> = Rest0,
+    Pdu = #organizationally_specific{ value = Value, oui = 'profibus', subtype = Subtype },
+    decode(Rest, [Pdu | Acc]);
+decode(<<?ORGANIZATIONALLY_SPECIFIC:7, Length:9, ?GMBH:24,
+    Subtype:8, Rest0/bytes>>, Acc) ->
+    Len = Length - 4,
+    <<Value:Len/bytes, Rest/bytes>> = Rest0,
+    Pdu = #organizationally_specific{ value = Value, oui = gmbh, subtype = Subtype },
+    decode(Rest, [Pdu | Acc]);
 decode(<<?ORGANIZATIONALLY_SPECIFIC:7, Length:9,
          Value:Length/bytes, Rest/bytes>>, Acc) ->
+    io:format("ahoy~n", []),
     Pdu = #organizationally_specific{ value = Value },
     decode(Rest, [Pdu | Acc]).
 
@@ -124,9 +155,13 @@ encode_pdu(#system_capability{ system = System,
 encode_pdu(#management_address{ value = Value }) ->
     Length = byte_size(Value),
     <<?MANAGEMENT_ADDRESS:7, Length:9, Value:Length/bytes>>;
-encode_pdu(#organizationally_specific{ value = Value }) ->
+encode_pdu(#organizationally_specific{ value = Value, oui = undefined }) ->
     Length = byte_size(Value),
-    <<?ORGANIZATIONALLY_SPECIFIC:7, Length:9, Value:Length/bytes>>.
+    <<?ORGANIZATIONALLY_SPECIFIC:7, Length:9, Value:Length/bytes>>;
+encode_pdu(#organizationally_specific{value = Value, oui = Oui0, subtype = Subtype}) ->
+    Length = byte_size(Value),
+    Oui = map(org_specific, Oui0),
+    <<?ORGANIZATIONALLY_SPECIFIC:7, (Length+4):9, Oui:24, Subtype:8, Value:Length/bytes>>.
 
 % ChassisID SubTypes
 map(chassis_id, ?CHASSIS_ID_IFAlias) -> interface_alias;
@@ -156,7 +191,13 @@ map(port_id, mac_address)      -> ?PORT_ID_MAC;
 map(port_id, network_address)  -> ?PORT_ID_NW;
 map(port_id, interface_name)   -> ?PORT_ID_IFNAME;
 map(port_id, agent_circuit_id) -> ?PORT_ID_AGENT_CIRC_ID;
-map(port_id, locally_assigned) -> ?PORT_ID_LOCALLY.
+map(port_id, locally_assigned) -> ?PORT_ID_LOCALLY;
+
+map(org_specific, 'ieee 802.1') -> ?IEEE_8021;
+map(org_specific, 'ieee 802.3') -> ?IEEE_8023;
+map(org_specific, 'tr-41') -> ?TIA_TR41;
+map(org_specific, profibus) -> ?PROFIBUS;
+map(org_specific, gmbh) -> ?GMBH.
 
 % Encode Bitmap flags
 flags_to_binary(Type, Flags, BitSize) ->
