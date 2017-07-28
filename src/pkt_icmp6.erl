@@ -147,21 +147,21 @@ codec(#icmp6{
 % Neighbor Advertisement Message
 codec(<<?ND_NEIGHBOR_ADVERT:8, Code:8, Checksum:16,
         R:1, S:1, O:1, Res:29,
-        SA1:16, SA2:16, SA3:16, SA4:16, SA5:16, SA6:16, SA7:16, SA8:16,
+        DA1:16, DA2:16, DA3:16, DA4:16, DA5:16, DA6:16, DA7:16, DA8:16,
         Payload/binary>>) ->
     {#icmp6{
         type = ?ND_NEIGHBOR_ADVERT, code = Code, checksum = Checksum,
         r = R, s = S, o = O, res = Res,
-        saddr = {SA1,SA2,SA3,SA4,SA5,SA6,SA7,SA8}
+        daddr = {DA1,DA2,DA3,DA4,DA5,DA6,DA7,DA8}
     }, Payload};
 codec(#icmp6{
         type = ?ND_NEIGHBOR_ADVERT, code = Code, checksum = Checksum,
         r = R, s = S, o = O, res = Res,
-        saddr = {SA1,SA2,SA3,SA4,SA5,SA6,SA7,SA8}
+        daddr = {DA1,DA2,DA3,DA4,DA5,DA6,DA7,DA8}
     }) ->
     <<?ND_NEIGHBOR_ADVERT:8, Code:8, Checksum:16,
       R:1, S:1, O:1, Res:29,
-      SA1:16, SA2:16, SA3:16, SA4:16, SA5:16, SA6:16, SA7:16, SA8:16>>;
+      DA1:16, DA2:16, DA3:16, DA4:16, DA5:16, DA6:16, DA7:16, DA8:16>>;
 
 % Redirect Message
 codec(<<?ND_REDIRECT:8, Code:8, Checksum:16,
