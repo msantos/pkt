@@ -44,6 +44,7 @@
         '802.1q'/1,
         llc/1,
         arp/1,
+        rarp/1,
         lldp/1,
         null/1,
         gre/1,
@@ -165,6 +166,9 @@ decapsulate_next({gre, Data}, Headers) ->
 decapsulate_next({arp, Data}, Headers) ->
     {Header, Payload} = arp(Data),
     lists:reverse([Payload, Header|Headers]);
+decapsulate_next({rarp, Data}, Headers) ->
+    {Header, Payload} = rarp(Data),
+    lists:reverse([Payload, Header|Headers]);
 decapsulate_next({lldp, Data}, Headers) ->
     {Header, Payload} = lldp(Data),
     lists:reverse([Payload, Header|Headers]);
@@ -257,6 +261,7 @@ decode_next({ipv6_none, Data}, Headers) ->
 
 decode_next({Proto, Data}, Headers) when
     Proto =:= arp;
+    Proto =:= rarp;
     Proto =:= icmp;
     Proto =:= icmp6;
     Proto =:= igmp;
@@ -308,6 +313,10 @@ mpls(N) ->
 %% ARP
 arp(N) ->
     pkt_arp:codec(N).
+
+%% RARP
+rarp(N) ->
+    pkt_rarp:codec(N).
 
 %% LLDP
 lldp(N) ->

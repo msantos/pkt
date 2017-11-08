@@ -1,4 +1,4 @@
-%% Copyright (c) 2009-2016, Michael Santos <michael.santos@gmail.com>
+%% Copyright (c) 2009-2017, Michael Santos <michael.santos@gmail.com>
 %% All rights reserved.
 %%
 %% Redistribution and use in source and binary forms, with or without
@@ -28,36 +28,40 @@
 %% LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 %% ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 %% POSSIBILITY OF SUCH DAMAGE.
--module(pkt_ether).
+-module(pkt_rarp).
 
 -include("pkt_ether.hrl").
+-include("pkt_rarp.hrl").
 
--export([codec/1, type/1]).
+-export([codec/1]).
 
-type(?ETH_P_IP) -> ipv4;
-type(?ETH_P_IPV6) -> ipv6;
-type(?ETH_P_ARP) -> arp;
-type(?ETH_P_RARP) -> rarp;
-type(?ETH_P_LLDP) -> lldp;
-%% IEEE 802.3 Ethernet
-type(EtherType) when EtherType < 16#05DC -> llc;
-%% 802.1Q Virtual LAN
-type(?ETH_P_802_1Q) -> '802.1q';
-%% 802.1ad (802.1q QinQ)
-type(?ETH_P_802_1QinQ) -> '802.1qinq';
-%% MPLS_
-type(?ETH_P_MPLS_UNI) -> mpls;
-type(?ETH_P_MPLS_MULTI) -> mpls.
-
-codec(<<Dhost:6/bytes, Shost:6/bytes, Type:16, Payload/binary>>) ->
-%    Len = byte_size(Packet) - 4,
-%    <<Payload:Len/bytes, CRC:4/bytes>> = Packet,
-    {#ether{
-       dhost = Dhost, shost = Shost,
-       type = Type
-      }, Payload};
-codec(#ether{
-       dhost = Dhost, shost = Shost,
-       type = Type
-      }) ->
-    <<Dhost:6/bytes, Shost:6/bytes, Type:16>>.
+codec(<<Hrd:16, Pro:16,
+    Hln:8, Pln:8, Op:16,
+    Sha:6/bytes,
+    SA1:8, SA2:8, SA3:8, SA4:8,
+    Tha:6/bytes,
+    DA1:8, DA2:8, DA3:8, DA4:8,
+    Payload/binary>>
+) ->
+    {#rarp{
+        hrd = Hrd, pro = Pro,
+        hln = Hln, pln = Pln, op = Op,
+        sha = Sha,
+        sip = {SA1,SA2,SA3,SA4},
+        tha = Tha,
+        tip = {DA1,DA2,DA3,DA4}
+    }, Payload};
+codec(#rarp{
+        hrd = Hrd, pro = Pro,
+        hln = Hln, pln = Pln, op = Op,
+        sha = Sha,
+        sip = {SA1,SA2,SA3,SA4},
+        tha = Tha,
+        tip = {DA1,DA2,DA3,DA4}
+    }) ->
+    <<Hrd:16, Pro:16,
+    Hln:8, Pln:8, Op:16,
+    Sha:6/bytes,
+    SA1:8, SA2:8, SA3:8, SA4:8,
+    Tha:6/bytes,
+    DA1:8, DA2:8, DA3:8, DA4:8>>.

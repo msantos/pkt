@@ -6,6 +6,7 @@
 -include("pkt_llc.hrl").
 -include("pkt_802_1q.hrl").
 -include("pkt_arp.hrl").
+-include("pkt_rarp.hrl").
 -include("pkt_lldp.hrl").
 -include("pkt_mpls.hrl").
 

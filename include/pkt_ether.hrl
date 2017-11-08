@@ -1,6 +1,7 @@
 %% From http://en.wikipedia.org/wiki/EtherType
 -define(ETH_P_IP, 16#0800).
 -define(ETH_P_ARP, 16#0806).
+-define(ETH_P_RARP, 16#8035).
 -define(ETH_P_IPV6, 16#86DD).
 -define(ETH_P_802_1Q, 16#8100).
 -define(ETH_P_802_1QinQ, 16#88a8).
