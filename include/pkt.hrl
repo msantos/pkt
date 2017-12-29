@@ -22,3 +22,4 @@
 -include("pkt_sctp.hrl").
 -include("pkt_tcp.hrl").
 -include("pkt_udp.hrl").
+-include("pkt_802_1x.hrl").
