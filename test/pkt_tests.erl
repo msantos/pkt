@@ -13,6 +13,8 @@ pkt_test_() ->
         decode_2(),
         decode_2_failure(),
         decode_2_unsupported(),
+        encode_1(),
+        encode_2(),
         makesum_1(),
         makesum_2(),
         makesum_4(),
@@ -29,7 +31,10 @@ packet(ether) ->
       16,22,69,237,136,137,0>>;
 packet(tcp) ->
     <<0,80,217,184,222,13,22,43,241,75,9,12,176,18,17,4,140,86,
-      0,0,2,4,5,172,1, 3,3,0,1,1,8,10,190,15,172,236,0,64,161,73,4,2,0,0>>.
+      0,0,2,4,5,172,1, 3,3,0,1,1,8,10,190,15,172,236,0,64,161,73,4,2,0,0>>;
+packet(ipv4_hdr) ->
+    <<69,0,0,54,2,108,64,0,53,6,172,243,173,192,82,195,192,
+        168,213,54>>.
 
 decapsulate_1() ->
     ?_assertEqual(
@@ -115,6 +120,28 @@ decode_2_unsupported() ->
                                10,190,15,172,236,0,64,161,73,4,2,0,0>>}},
         pkt:decode(ether, packet(tcp))
     ).
+
+encode_1() -> [
+    ?_assertEqual(
+        packet(ether),
+        pkt:encode(pkt:decapsulate(packet(ether)))
+    ),
+    ?_assertNotEqual(
+        packet(ether),
+        pkt:encode({pkt:decapsulate(packet(ether)), <<0,2>>})
+    )
+].
+
+encode_2() -> [
+    ?_assertEqual(
+        packet(ipv4_hdr),
+        pkt:encode(pkt:ipv4(packet(ipv4_hdr)))
+    ),
+    ?_assertNotEqual(
+        packet(ipv4_hdr),
+        pkt:encode({pkt:ipv4(packet(ipv4_hdr)), <<0,1>>})
+    )
+].
 
 makesum_1() ->
     ?_assertEqual(
