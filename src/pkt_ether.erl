@@ -43,6 +43,8 @@ type(?ETH_P_LLDP) -> lldp;
 type(EtherType) when EtherType < 16#05DC -> llc;
 %% 802.1Q Virtual LAN
 type(?ETH_P_802_1Q) -> '802.1q';
+%% 802.1X EAPoL
+type(?ETH_P_802_1X) -> '802.1x';
 %% 802.1ad (802.1q QinQ)
 type(?ETH_P_802_1QinQ) -> '802.1qinq';
 %% MPLS_
