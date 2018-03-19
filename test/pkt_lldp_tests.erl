@@ -6,7 +6,8 @@
 codec_test_() ->
     [
         decode(),
-        encode()
+        encode(),
+        pkt_decode()
     ].
 
 packet() ->
@@ -42,6 +43,13 @@ packet() ->
       16#30, 16#33, 16#2d, 16#30, 16#35, 16#30, 16#35, 16#00,
       16#fe, 16#05, 16#00, 16#80, 16#c2, 16#04, 16#00, 16#00,
       16#00>>.
+packet(entire_pkt) ->
+    <<
+        16#01, 16#80, 16#c2, 16#00, 16#00, 16#0e, 16#00, 16#04, 16#96, 16#1f, 16#a7, 16#26, 16#88, 16#cc, 16#02, 16#07,
+        16#04, 16#00, 16#04, 16#96, 16#1f, 16#a7, 16#26, 16#04, 16#04, 16#05, 16#31, 16#2f, 16#33, 16#06, 16#02, 16#00,
+        16#78, 16#06, 16#02, 16#00, 16#01, 16#06, 16#02, 16#00, 16#02, 16#06, 16#02, 16#00, 16#03, 16#00, 16#00, 16#ff,
+        16#ff, 16#ff, 16#ff, 16#ff, 16#ff, 16#ff, 16#ff, 16#ff, 16#ff, 16#ff, 16#ff, 16#ff, 16#ff, 16#ff, 16#aa, 16#bb
+    >>.
 
 decode() ->
     ?_assertEqual({{lldp, [{chassis_id,mac_address,<<0,1,48,249,173,160>>},
@@ -67,3 +75,19 @@ decode() ->
 encode() ->
     {Header, _Payload} = pkt:lldp(packet()),
     ?_assertEqual(pkt:lldp(Header), packet()).
+
+pkt_decode() ->
+    ?_assertEqual(
+        {ok,{[{ether,<<1,128,194,0,0,14>>,
+            <<0,4,150,31,167,38>>,
+            35020,0},
+            {lldp,[{chassis_id,mac_address,<<0,4,150,31,167,38>>},
+                {port_id,interface_name,<<"1/3">>},
+                {ttl,120},
+                {ttl,1},
+                {ttl,2},
+                {ttl,3},
+                end_of_lldpdu]}],
+            <<>>}},
+        pkt:codec(packet(entire_pkt))
+    ).
