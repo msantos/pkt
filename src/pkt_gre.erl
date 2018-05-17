@@ -35,17 +35,27 @@
 
 -export([codec/1]).
 
-codec(<<0:1,Res0:12,Ver:3,Type:16,Rest/binary>>) ->
-    {#gre{c = 0, res0 = Res0, ver = Ver, type = Type
-       },Rest
+codec(<<C:1,R:1,K:1,S:1,Res0:9,Ver:3,Type:16,Bin/binary>>) ->
+  {[Chksum, Res1, Key, Sequence], Payload} = unpack([C, K, S], Bin),
+  {#gre{c = C, r = R, k = K, s = S, res0 = Res0, ver = Ver, type = Type, chksum = Chksum,
+    res1 = Res1, key = Key, sequence = Sequence
+       },Payload
     };
-codec(<<1:1,Res0:12,Ver:3,Type:16,Chksum:16,Res1:16,Rest/binary>>) ->
-    {#gre{c = 1, res0 = Res0, ver = Ver, type = Type,
-	chksum = Chksum, res1 = Res1
-       },Rest
-    };
-codec(#gre{c = 0, res0 = Res0, ver = Ver, type = Type}) ->
-    <<0:1,Res0:12,Ver:3,Type:16>>;
-codec(#gre{c = 1, res0 = Res0, ver = Ver, type = Type,
-	chksum = Chksum, res1 = Res1}) ->
-    <<1:1,Res0:12,Ver:3,Type:16,Chksum:16,Res1:16>>.
+
+codec(#gre{c = C, r = R, k = K, s = S, res0 = Res0, ver = Ver, type = Type, chksum = Chksum,
+    res1 = Res1, key = Key, sequence = Sequence
+       }) ->
+    ChecksumLength = C*16,
+    Res1Length = ChecksumLength,
+    KeyLength = K*32,
+    SequenceLength = S*32,
+    <<C:1,R:1,K:1,S:1,Res0:9,Ver:3,Type:16,Chksum:ChecksumLength,Res1:Res1Length,Key:KeyLength,Sequence:SequenceLength>>.
+
+unpack([0, 0, 0], Bin) -> {[0, 0, 0, 0], Bin};
+unpack([C, K, S], Bin) ->
+  ChecksumLength = C*16,
+  Res1Length = ChecksumLength,
+  KeyLength = K*32,
+  SequenceLength = S*32,
+  <<Chksum:ChecksumLength,Res1:Res1Length,Key:KeyLength,Sequence:SequenceLength,Payload/binary>> = Bin,
+  {[Chksum, Res1, Key, Sequence], Payload}.
