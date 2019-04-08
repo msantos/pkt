@@ -1,2 +1,4 @@
 _build
 *.swp
+/ebin/
+/.rebar3/

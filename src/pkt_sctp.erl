@@ -48,18 +48,27 @@ codec(<<SPort:16, DPort:16, VTag:32, Sum:32, Payload/binary>>) ->
 
 %% Internal functions
 
-decode_chunks(<<Type:8, Flags:1/binary-unit:8, Length:16, Rest/binary>>, Acc) when Length /= 0 ->
-    {L, Pad} = case Length rem 4 of
-        0 -> % No padding bytes
-            {Length - 4, 0};
-        N when N =< 3 -> % pad should be no more than 3 bytes
-            {Length - 4, (4 - N) * 8}
-    end,
-    <<Payload:L/binary-unit:8, _:Pad, Tail/binary>> = Rest,
-    decode_chunks(Tail, [chunk(Type, Flags, Length, Payload) | Acc]);
-decode_chunks(<<>>, Acc) -> {Acc, <<>>};
-%% Ignore other bytes which are not SCTP chunks (VSS, ...)
-decode_chunks(Other, Acc) -> {Acc, Other}.
+decode_chunks(Chunks, Acc) ->
+    case chunk_len(Chunks) < byte_size(Chunks) of
+        true ->
+            <<Type:8, Flags:1/binary, Length:16, Rest/binary>> = Chunks,
+            Pad = chunk_pad_len(Length),
+            Len = Length-4,
+            <<Payload:Len/binary, _:Pad, Tail/binary>> = Rest,
+            decode_chunks(Tail, [chunk(Type, Flags, Length, Payload) | Acc]);
+        false ->
+            {Acc, Chunks}
+    end.
+
+%%% if chunks is less than 4 bytes, we can't read a length.
+%%% we return sizeof chunks plus one, indicating that a read will fail.
+chunk_len(<<_:16, L:16, _/binary>>) ->
+    L-4+chunk_pad_len(L);
+chunk_len(Chunks) ->
+    byte_size(Chunks)+1.
+
+chunk_pad_len(L) ->
+    3-((L+3) rem 4).
 
 -spec chunk(byte(), binary(), non_neg_integer(), binary()) -> #sctp_chunk{}.
 chunk(Type, Flags, Len, Payload) ->
