@@ -54,19 +54,20 @@ decode_chunks(Chunks, Acc) ->
             <<Type:8, Flags:1/binary, Length:16, Rest/binary>> = Chunks,
             Pad = chunk_pad_len(Length),
             Len = Length-4,
-            <<Payload:Len/binary, _:Pad, Tail/binary>> = Rest,
+            <<Payload:Len/binary, _:Pad/binary, Tail/binary>> = Rest,
             decode_chunks(Tail, [chunk(Type, Flags, Length, Payload) | Acc]);
         false ->
             {Acc, Chunks}
     end.
 
-%%% if chunks is less than 4 bytes, we can't read a length.
-%%% we return sizeof chunks plus one, indicating that a read will fail.
+%%% if 'chunks' is less than 4 bytes, we can't read a length.
+%%% we return 'sizeof chunks' plus one, indicating that a read will fail.
 chunk_len(<<_:16, L:16, _/binary>>) ->
     L-4+chunk_pad_len(L);
 chunk_len(Chunks) ->
     byte_size(Chunks)+1.
 
+%%% pad length in bytes
 chunk_pad_len(L) ->
     3-((L+3) rem 4).
 
