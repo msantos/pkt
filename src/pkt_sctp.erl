@@ -61,9 +61,9 @@ decode_chunks(Chunks, Acc) ->
     end.
 
 %%% if 'chunks' is less than 4 bytes, we can't read a length.
-%%% if 'length' is less than 5, the chunk is corrupt.
+%%% if 'length' is less than 4, the chunk is corrupt.
 %%% we return 'sizeof chunks' plus one, indicating that a read will fail.
-chunk_len(<<_:16, L:16, _/binary>>) when 4 < L ->
+chunk_len(<<_:16, L:16, _/binary>>) when 4 =< L ->
     L-4+chunk_pad_len(L);
 chunk_len(Chunks) ->
     byte_size(Chunks)+1.
