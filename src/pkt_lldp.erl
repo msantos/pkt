@@ -84,6 +84,10 @@ decode(<<?MANAGEMENT_ADDRESS:7, Length:9,
 decode(<<?ORGANIZATIONALLY_SPECIFIC:7, Length:9,
          Value:Length/bytes, Rest/bytes>>, Acc) ->
     Pdu = #organizationally_specific{ value = Value },
+    decode(Rest, [Pdu | Acc]);
+decode(<<Type:7, Length:9,
+         Value:Length/bytes, Rest/bytes>>, Acc) ->
+    Pdu = #unknown_lldp_tlv{ type = Type, value = Value },
     decode(Rest, [Pdu | Acc]).
 
 encode([], Binary) -> Binary;
