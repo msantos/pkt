@@ -140,6 +140,9 @@
 -record(organizationally_specific, { value = <<>> :: binary() }).
 -type organizationally_specific() :: #organizationally_specific{}.
 
+-record(unknown_lldp_tlv,{type = 0:: integer(), value = <<>> :: binary()}).
+-type unknown_lldp_tlv() :: #unknown_lldp_tlv{}.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % LLDP Frame Format
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -153,7 +156,8 @@
              | system_desc()
              | system_capability()
              | management_address()
-             | organizationally_specific().
+             | organizationally_specific()
+             | unknown_lldp_tlv().
 
 -record(lldp, { pdus = [] :: [pdu()] }).
 -type lldp() :: #lldp{}.
