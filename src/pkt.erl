@@ -201,6 +201,9 @@ decapsulate_next({'802.1x', Data}, Headers) ->
 
 % IPv6 NONE pseudo-header
 decapsulate_next({ipv6_none, Data}, Headers) ->
+    lists:reverse([Data|Headers]);
+
+decapsulate_next({'$stop', Data}, Headers) ->
     lists:reverse([Data|Headers]).
 
 codec(Data) when is_binary(Data) ->
@@ -268,6 +271,8 @@ decode_next({Proto, Data}, Headers) when
     case Decode of
         {ok, {Header, Payload}} ->
             try next(Header) of
+                '$stop' ->
+                    {ok, {lists:reverse([Header|Headers]), Payload}};
                 Next ->
                     decode_next({Next, Payload}, [Header|Headers])
             catch
@@ -308,12 +313,14 @@ next(#null{family = Family}) -> family(Family);
 next(#linux_cooked{pro = Pro}) -> ether_type(Pro);
 next(#ether{type = Type}) -> ether_type(Type);
 next(#'802.1q'{type = Type}) -> ether_type(Type);
+next(#ipv4{off = Off}) when Off =/= 0 -> '$stop';
 next(#ipv4{p = P}) -> ipproto(P);
 next(#gre{type = Type}) -> ether_type(Type);
 next(#ipv6{next = Next}) -> ipproto(Next);
 next(#ipv6_ah{next = Next}) -> ipproto(Next);
 next(#ipv6_dstopts{next = Next}) -> ipproto(Next);
 next(#ipv6_esp{next = Next}) -> ipproto(Next);
+next(#ipv6_fragment{off = Off}) when Off =/= 0 -> '$stop';
 next(#ipv6_fragment{next = Next}) -> ipproto(Next);
 next(#ipv6_hopopts{next = Next}) -> ipproto(Next);
 next(#ipv6_routing{next = Next}) -> ipproto(Next).
