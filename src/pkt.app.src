@@ -1,6 +1,6 @@
 {application, pkt, [
     {description, "Network packet parsing library"},
-    {vsn, "0.4.5"},
+    {vsn, "0.5.0"},
     {licenses, ["BSD-3"]},
     {applications, [kernel, stdlib]}
 ]}.
