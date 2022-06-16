@@ -64,6 +64,7 @@ codec(?DLT_PFLOG) -> pflog;
 codec(?DLT_IEEE802_11_RADIO) -> ieee802_11_radio;
 codec(?DLT_APPLE_IP_OVER_IEEE1394) -> apple_ip_over_ieee1394;
 codec(?DLT_IEEE802_11_RADIO_AVS) -> ieee802_11_radio_avs;
+codec(?DLT_LINUX_SLL2) -> linux_sll2;
 
 codec(null) -> ?DLT_NULL;
 codec(en10mb) -> ?DLT_EN10MB;
@@ -91,4 +92,5 @@ codec(linux_sll) -> ?DLT_LINUX_SLL;
 codec(pflog) -> ?DLT_PFLOG;
 codec(ieee802_11_radio) -> ?DLT_IEEE802_11_RADIO;
 codec(apple_ip_over_ieee1394) -> ?DLT_APPLE_IP_OVER_IEEE1394;
-codec(ieee802_22_radio_avs) -> ?DLT_IEEE802_11_RADIO_AVS.
+codec(ieee802_22_radio_avs) -> ?DLT_IEEE802_11_RADIO_AVS;
+codec(linux_sll2) -> ?DLT_LINUX_SLL2.

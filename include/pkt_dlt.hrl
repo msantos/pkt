@@ -25,3 +25,4 @@
 -define(DLT_IEEE802_11_RADIO, 127).
 -define(DLT_APPLE_IP_OVER_IEEE1394, 138).
 -define(DLT_IEEE802_11_RADIO_AVS, 163).
+-define(DLT_LINUX_SLL2, 276).                % Linux cooked v2 sockets fake hdr
