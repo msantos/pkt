@@ -1,4 +1,4 @@
-%% Copyright (c) 2009-2015, Michael Santos <michael.santos@gmail.com>
+%% Copyright (c) 2009-2022, Michael Santos <michael.santos@gmail.com>
 %% All rights reserved.
 %%
 %% Redistribution and use in source and binary forms, with or without
@@ -85,7 +85,19 @@ chunk(Type, Flags, Len, Payload) ->
         payload = chunk_payload(Type, Payload)
     }.
 
--spec chunk_payload(non_neg_integer(), binary()) -> #sctp_chunk_data{} | binary().
+-spec chunk_payload(non_neg_integer(), binary()) ->
+    #sctp_chunk_data{}
+    | #sctp_chunk_init{}
+    | #sctp_chunk_init_ack{}
+    | #sctp_chunk_sack{}
+    | #sctp_chunk_cookie_echo{}
+    | #sctp_chunk_cookie_ack{}
+    | #sctp_chunk_heartbeat{}
+    | #sctp_chunk_heartbeat_ack{}
+    | #sctp_chunk_shutdown{}
+    | #sctp_chunk_shutdown_ack{}
+    | #sctp_chunk_shutdown_complete{}
+    | binary().
 chunk_payload(?SCTP_CHUNK_DATA, <<Tsn:32, Sid:16, Ssn:16, Ppi:32, Data/binary>>) ->
 	#sctp_chunk_data{tsn = Tsn, sid = Sid, ssn = Ssn, ppi = Ppi, data = Data};
 chunk_payload(?SCTP_CHUNK_INIT, <<Itag:32, Arwnd:32, OutStreams:16, InStreams:16, Tsn:32, Rest/binary>>) ->

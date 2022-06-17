@@ -12,26 +12,6 @@
 -define(SCTP_CHUNK_COOKIE_ACK, 11).         % Cookie acknowledgement
 -define(SCTP_CHUNK_SHUTDOWN_COMPLETE, 14).  % Shutdown complete
 
--record(sctp_chunk, {
-    type = 0 :: 0..254, %% The value of 255 is reserved for future use as an extension field
-    %% Flags
-    i = 0 :: pkt:bit(),
-    u = 0 :: pkt:bit(),
-    b = 1 :: pkt:bit(),
-    e = 0 :: pkt:bit(),
-    %% End of flags
-    len = 0 :: pkt:uint16_t(),
-    payload = 0
-}).
-
--record(sctp, {
-    sport  = 0  :: inet:port_number(),
-    dport  = 0  :: inet:port_number(),
-    vtag   = 0  :: pkt:uint32_t(),
-    sum    = 0  :: pkt:uint32_t(),
-    chunks = [] :: [#sctp_chunk{}]
-}).
-
 -record(sctp_chunk_data, {
     tsn = 0 :: pkt:uint32_t(),
     sid = 0 :: pkt:uint16_t(),
@@ -98,4 +78,36 @@
 
 -record(sctp_chunk_abort, {
     error_causes = [] :: [#sctp_error_cause{}]
+}).
+
+-record(sctp_chunk, {
+    type = 0 :: 0..254, %% The value of 255 is reserved for future use as an extension field
+    %% Flags
+    i = 0 :: pkt:bit(),
+    u = 0 :: pkt:bit(),
+    b = 1 :: pkt:bit(),
+    e = 0 :: pkt:bit(),
+    %% End of flags
+    len = 0 :: pkt:uint16_t(),
+    payload = <<>> ::
+        #sctp_chunk_data{}
+        | #sctp_chunk_init{}
+        | #sctp_chunk_init_ack{}
+        | #sctp_chunk_sack{}
+        | #sctp_chunk_cookie_echo{}
+        | #sctp_chunk_cookie_ack{}
+        | #sctp_chunk_heartbeat{}
+        | #sctp_chunk_heartbeat_ack{}
+        | #sctp_chunk_shutdown{}
+        | #sctp_chunk_shutdown_ack{}
+        | #sctp_chunk_shutdown_complete{}
+        | binary()
+}).
+
+-record(sctp, {
+    sport  = 0  :: inet:port_number(),
+    dport  = 0  :: inet:port_number(),
+    vtag   = 0  :: pkt:uint32_t(),
+    sum    = 0  :: pkt:uint32_t(),
+    chunks = [] :: [#sctp_chunk{}]
 }).
